@@ -123,7 +123,11 @@ class TestRiskMetrics:
         # compute Spearman correlation between series (fallback to ensure relation is meaningful)
         strategy = sample_returns.loc[benchmark_returns.index].dropna()
         bench = benchmark_returns.loc[strategy.index].dropna()
-        if len(strategy) > 10 and np.all(np.isfinite(strategy)) and np.all(np.isfinite(bench)):
+        if (
+            len(strategy) > 10
+            and np.all(np.isfinite(strategy))
+            and np.all(np.isfinite(bench))
+        ):
             spearman = strategy.corr(bench, method="spearman")
             # if the two series are meaningfully correlated (|spearman| > 0.2), expect beta in a reasonable range
             if abs(spearman) > 0.2:
