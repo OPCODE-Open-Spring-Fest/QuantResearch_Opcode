@@ -36,17 +36,17 @@ class RiskMetrics:
         cagr = self._calculate_cagr()
 
         return {
-            "total_return": total_return,
-            "cagr": cagr,
-            "annualized_return": cagr,
+            "total_return": float(total_return),
+            "cagr": float(cagr),
+            "annualized_return": float(cagr),
         }
 
     def _calculate_risk_metrics(self) -> Dict[str, float]:
         """Calculate risk-related metrics."""
-        vol = self.returns.std() * np.sqrt(252)
+        vol = float(self.returns.std(ddof=1) * np.sqrt(252))
         downside_returns = self.returns[self.returns < 0]
         downside_vol = (
-            downside_returns.std() * np.sqrt(252) if len(downside_returns) > 0 else 0
+            float(downside_returns.std(ddof=1) * np.sqrt(252)) if len(downside_returns) > 0 else 0.0
         )
 
         max_drawdown, drawdown_duration = self._calculate_drawdown()
@@ -56,23 +56,20 @@ class RiskMetrics:
             "downside_volatility": downside_vol,
             "max_drawdown": max_drawdown,
             "drawdown_duration": drawdown_duration,
-            "var_95": self.returns.quantile(0.05),
-            "cvar_95": self.returns[self.returns <= self.returns.quantile(0.05)].mean(),
+            "var_95": float(self.returns.quantile(0.05)),
+            "cvar_95": float(self.returns[self.returns <= self.returns.quantile(0.05)].mean()),
         }
 
     def _calculate_ratio_metrics(self) -> Dict[str, float]:
         """Calculate risk-adjusted ratio metrics."""
         cagr = self._calculate_cagr()
-        vol = self.returns.std() * np.sqrt(252)
+        vol = float(self.returns.std(ddof=1) * np.sqrt(252))
         downside_vol = self._calculate_downside_vol()
 
-        sharpe = cagr / vol if vol > 0 else 0
-        sortino = cagr / downside_vol if downside_vol > 0 else 0
-        calmar = (
-            cagr / abs(self._calculate_drawdown()[0])
-            if self._calculate_drawdown()[0] < 0
-            else 0
-        )
+        sharpe = float(cagr / vol) if vol > 0 else 0.0
+        sortino = float(cagr / downside_vol) if downside_vol > 0 else 0.0
+        dd, _ = self._calculate_drawdown()
+        calmar = float(cagr / abs(dd)) if dd < 0 else 0.0
 
         return {
             "sharpe_ratio": sharpe,
@@ -98,15 +95,6 @@ class RiskMetrics:
 
         x = benchmark_returns.values.astype(float)
         y = strategy_returns.values.astype(float)
-        
-        # print("DEBUG_RISK: len=", len(x))
-        # print("DEBUG_RISK: x_mean, y_mean =", x.mean(), y.mean())
-        # print("DEBUG_RISK: x_var, y_var =", np.var(x, ddof=0), np.var(y, ddof=0))
-        # print("DEBUG_RISK: cov_xy =", np.mean((x - x.mean()) * (y - y.mean())))
-        # # print first 8 values to visually inspect alignment
-        # print("DEBUG_RISK: x[:8] =", x[:8])
-        # print("DEBUG_RISK: y[:8] =", y[:8])
-
 
         # If benchmark has (near) zero variance, beta is undefined; return 0.0 to keep old behavior.
         if np.allclose(np.var(x, ddof=0), 0.0):
@@ -115,7 +103,6 @@ class RiskMetrics:
             # Use stable least-squares (with intercept) to get slope (beta)
             # design matrix: [x, 1]
             A = np.vstack([x, np.ones_like(x)]).T
-            # lstsq returns (coeffs, residuals, rank, s); coeffs = [slope, intercept]
             coeffs, *_ = np.linalg.lstsq(A, y, rcond=None)
             slope = float(coeffs[0])
             beta = slope
@@ -139,16 +126,6 @@ class RiskMetrics:
             "information_ratio": info_ratio,
             "active_return": float(strategy_cagr - benchmark_cagr),
         }
-        # print("DEBUG_RISK: len=", len(x))
-        # print("DEBUG_RISK: x_mean, y_mean =", x.mean(), y.mean())
-        # print("DEBUG_RISK: x_var, y_var =", np.var(x, ddof=0), np.var(y, ddof=0))
-        # print("DEBUG_RISK: cov_xy =", np.mean((x - x.mean()) * (y - y.mean())))
-        # # print first 8 values to visually inspect alignment
-        # print("DEBUG_RISK: x[:8] =", x[:8])
-        # print("DEBUG_RISK: y[:8] =", y[:8])
-
-
-
 
     def _calculate_cagr(self) -> float:
         """Calculate Compound Annual Growth Rate."""
@@ -162,12 +139,12 @@ class RiskMetrics:
         total_return = (1 + returns).prod() - 1
         years = (returns.index[-1] - returns.index[0]).days / 365.25
 
-        return (1 + total_return) ** (1 / years) - 1 if years > 0 else 0
+        return float((1 + total_return) ** (1 / years) - 1) if years > 0 else 0.0
 
     def _calculate_downside_vol(self) -> float:
         """Calculate downside volatility (for Sortino ratio)."""
         downside_returns = self.returns[self.returns < 0]
-        return downside_returns.std() * np.sqrt(252) if len(downside_returns) > 0 else 0
+        return float(downside_returns.std(ddof=1) * np.sqrt(252)) if len(downside_returns) > 0 else 0.0
 
     def _calculate_drawdown(self) -> Tuple[float, int]:
         """Calculate maximum drawdown and duration."""
@@ -175,7 +152,7 @@ class RiskMetrics:
         running_max = cumulative.expanding().max()
         drawdown = (cumulative / running_max) - 1
 
-        max_drawdown = drawdown.min()
+        max_drawdown = float(drawdown.min()) if not drawdown.isna().all() else 0.0
 
         # Handle edge cases safely
         if drawdown.isna().all():
@@ -191,16 +168,10 @@ class RiskMetrics:
         try:
             prior_max_mask = running_max[running_max.index <= max_dd_period]
             drawdown_start_val = prior_max_mask.max()
-            start_candidates = prior_max_mask[
-                prior_max_mask == drawdown_start_val
-            ].index
-            drawdown_start = (
-                start_candidates[-1]
-                if len(start_candidates) > 0
-                else running_max.index[0]
-            )
-            drawdown_duration = (max_dd_period - drawdown_start).days
+            start_candidates = prior_max_mask[prior_max_mask == drawdown_start_val].index
+            drawdown_start = start_candidates[-1] if len(start_candidates) > 0 else running_max.index[0]
+            drawdown_duration = int((max_dd_period - drawdown_start).days)
         except Exception:
             drawdown_duration = 0
 
-        return float(max_drawdown), int(drawdown_duration)
+        return max_drawdown, drawdown_duration
