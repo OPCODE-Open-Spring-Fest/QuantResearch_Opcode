@@ -85,45 +85,70 @@ class RiskMetrics:
         if self.benchmark_returns is None:
             return {}
 
-        # Align returns
+        # Align returns and drop NaNs
         common_index = self.returns.index.intersection(self.benchmark_returns.index)
-        strategy_returns = self.returns.loc[common_index]
-        benchmark_returns = self.benchmark_returns.loc[common_index]
+        strategy_returns = self.returns.loc[common_index].dropna()
+        benchmark_returns = self.benchmark_returns.loc[common_index].dropna()
 
-        # Calculate alpha and beta via OLS with intercept
-        x = benchmark_returns.values
-        y = strategy_returns.values
-        x_mean = x.mean()
-        y_mean = y.mean()
-        x_var = ((x - x_mean) ** 2).mean()
-        cov_xy = ((x - x_mean) * (y - y_mean)).mean()
-        beta = cov_xy / x_var if x_var > 0 else 0.0
-        alpha_daily = y_mean - beta * x_mean
-        # Convert alpha to annualized approximation
-        alpha = (1 + alpha_daily) ** 252 - 1 if alpha_daily != 0 else 0.0
+        if len(strategy_returns) == 0 or len(benchmark_returns) == 0:
+            return {}
 
+        # Ensure identical index after dropna
+        strategy_returns, benchmark_returns = strategy_returns.align(benchmark_returns, join="inner")
+
+        x = benchmark_returns.values.astype(float)
+        y = strategy_returns.values.astype(float)
+        
+        # print("DEBUG_RISK: len=", len(x))
+        # print("DEBUG_RISK: x_mean, y_mean =", x.mean(), y.mean())
+        # print("DEBUG_RISK: x_var, y_var =", np.var(x, ddof=0), np.var(y, ddof=0))
+        # print("DEBUG_RISK: cov_xy =", np.mean((x - x.mean()) * (y - y.mean())))
+        # # print first 8 values to visually inspect alignment
+        # print("DEBUG_RISK: x[:8] =", x[:8])
+        # print("DEBUG_RISK: y[:8] =", y[:8])
+
+
+        # If benchmark has (near) zero variance, beta is undefined; return 0.0 to keep old behavior.
+        if np.allclose(np.var(x, ddof=0), 0.0):
+            beta = 0.0
+        else:
+            # Use stable least-squares (with intercept) to get slope (beta)
+            # design matrix: [x, 1]
+            A = np.vstack([x, np.ones_like(x)]).T
+            # lstsq returns (coeffs, residuals, rank, s); coeffs = [slope, intercept]
+            coeffs, *_ = np.linalg.lstsq(A, y, rcond=None)
+            slope = float(coeffs[0])
+            beta = slope
+
+        # Annualized returns (CAGR) for alpha calculation
         strategy_cagr = self._calculate_cagr_from_returns(strategy_returns)
         benchmark_cagr = self._calculate_cagr_from_returns(benchmark_returns)
-        alpha = strategy_cagr - beta * benchmark_cagr
+        alpha = float(strategy_cagr - beta * benchmark_cagr)
 
-        # Tracking error
-        active_returns = strategy_returns - benchmark_returns
-        tracking_error = active_returns.std() * np.sqrt(252)
+        # Tracking error (annualized std of active returns)
+        active_returns = (strategy_returns - benchmark_returns).dropna()
+        tracking_error = float(active_returns.std(ddof=1) * np.sqrt(252)) if len(active_returns) > 1 else 0.0
 
         # Information ratio
-        info_ratio = (
-            (strategy_cagr - benchmark_cagr) / tracking_error
-            if tracking_error > 0
-            else 0
-        )
+        info_ratio = float((strategy_cagr - benchmark_cagr) / tracking_error) if tracking_error > 0 else 0.0
 
         return {
             "alpha": alpha,
             "beta": beta,
             "tracking_error": tracking_error,
             "information_ratio": info_ratio,
-            "active_return": strategy_cagr - benchmark_cagr,
+            "active_return": float(strategy_cagr - benchmark_cagr),
         }
+        # print("DEBUG_RISK: len=", len(x))
+        # print("DEBUG_RISK: x_mean, y_mean =", x.mean(), y.mean())
+        # print("DEBUG_RISK: x_var, y_var =", np.var(x, ddof=0), np.var(y, ddof=0))
+        # print("DEBUG_RISK: cov_xy =", np.mean((x - x.mean()) * (y - y.mean())))
+        # # print first 8 values to visually inspect alignment
+        # print("DEBUG_RISK: x[:8] =", x[:8])
+        # print("DEBUG_RISK: y[:8] =", y[:8])
+
+
+
 
     def _calculate_cagr(self) -> float:
         """Calculate Compound Annual Growth Rate."""
