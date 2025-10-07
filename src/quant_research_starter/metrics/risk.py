@@ -46,7 +46,9 @@ class RiskMetrics:
         vol = float(self.returns.std(ddof=1) * np.sqrt(252))
         downside_returns = self.returns[self.returns < 0]
         downside_vol = (
-            float(downside_returns.std(ddof=1) * np.sqrt(252)) if len(downside_returns) > 0 else 0.0
+            float(downside_returns.std(ddof=1) * np.sqrt(252))
+            if len(downside_returns) > 0
+            else 0.0
         )
 
         max_drawdown, drawdown_duration = self._calculate_drawdown()
@@ -57,7 +59,9 @@ class RiskMetrics:
             "max_drawdown": max_drawdown,
             "drawdown_duration": drawdown_duration,
             "var_95": float(self.returns.quantile(0.05)),
-            "cvar_95": float(self.returns[self.returns <= self.returns.quantile(0.05)].mean()),
+            "cvar_95": float(
+                self.returns[self.returns <= self.returns.quantile(0.05)].mean()
+            ),
         }
 
     def _calculate_ratio_metrics(self) -> Dict[str, float]:
@@ -91,7 +95,9 @@ class RiskMetrics:
             return {}
 
         # Ensure identical index after dropna
-        strategy_returns, benchmark_returns = strategy_returns.align(benchmark_returns, join="inner")
+        strategy_returns, benchmark_returns = strategy_returns.align(
+            benchmark_returns, join="inner"
+        )
 
         x = benchmark_returns.values.astype(float)
         y = strategy_returns.values.astype(float)
@@ -114,10 +120,18 @@ class RiskMetrics:
 
         # Tracking error (annualized std of active returns)
         active_returns = (strategy_returns - benchmark_returns).dropna()
-        tracking_error = float(active_returns.std(ddof=1) * np.sqrt(252)) if len(active_returns) > 1 else 0.0
+        tracking_error = (
+            float(active_returns.std(ddof=1) * np.sqrt(252))
+            if len(active_returns) > 1
+            else 0.0
+        )
 
         # Information ratio
-        info_ratio = float((strategy_cagr - benchmark_cagr) / tracking_error) if tracking_error > 0 else 0.0
+        info_ratio = (
+            float((strategy_cagr - benchmark_cagr) / tracking_error)
+            if tracking_error > 0
+            else 0.0
+        )
 
         return {
             "alpha": alpha,
@@ -144,7 +158,11 @@ class RiskMetrics:
     def _calculate_downside_vol(self) -> float:
         """Calculate downside volatility (for Sortino ratio)."""
         downside_returns = self.returns[self.returns < 0]
-        return float(downside_returns.std(ddof=1) * np.sqrt(252)) if len(downside_returns) > 0 else 0.0
+        return (
+            float(downside_returns.std(ddof=1) * np.sqrt(252))
+            if len(downside_returns) > 0
+            else 0.0
+        )
 
     def _calculate_drawdown(self) -> Tuple[float, int]:
         """Calculate maximum drawdown and duration."""
@@ -168,8 +186,14 @@ class RiskMetrics:
         try:
             prior_max_mask = running_max[running_max.index <= max_dd_period]
             drawdown_start_val = prior_max_mask.max()
-            start_candidates = prior_max_mask[prior_max_mask == drawdown_start_val].index
-            drawdown_start = start_candidates[-1] if len(start_candidates) > 0 else running_max.index[0]
+            start_candidates = prior_max_mask[
+                prior_max_mask == drawdown_start_val
+            ].index
+            drawdown_start = (
+                start_candidates[-1]
+                if len(start_candidates) > 0
+                else running_max.index[0]
+            )
             drawdown_duration = int((max_dd_period - drawdown_start).days)
         except Exception:
             drawdown_duration = 0
