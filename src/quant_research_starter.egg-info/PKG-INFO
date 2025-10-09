@@ -1,0 +1,74 @@
+Metadata-Version: 2.4
+Name: quant-research-starter
+Version: 0.1.0
+Summary: A modular, open-source quantitative research and backtesting framework
+Author-email: QuantResearchStarter Contributors <contributors@example.com>
+License: MIT
+Project-URL: Homepage, https://github.com/username/QuantResearchStarter
+Project-URL: Bug Reports, https://github.com/username/QuantResearchStarter/issues
+Project-URL: Source, https://github.com/username/QuantResearchStarter
+Keywords: quantitative,finance,backtesting,research
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Financial and Insurance Industry
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: pandas>=2.0.0
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: scipy>=1.10.0
+Requires-Dist: scikit-learn>=1.3.0
+Requires-Dist: matplotlib>=3.7.0
+Requires-Dist: plotly>=5.14.0
+Requires-Dist: jupyter>=1.0.0
+Requires-Dist: click>=8.1.0
+Requires-Dist: fastapi>=0.100.0
+Requires-Dist: uvicorn>=0.23.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: requests>=2.31.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.1.0; extra == "dev"
+Requires-Dist: black>=23.0.0; extra == "dev"
+Requires-Dist: ruff>=0.0.280; extra == "dev"
+Requires-Dist: pre-commit>=3.3.0; extra == "dev"
+Requires-Dist: nbconvert>=7.4.0; extra == "dev"
+Provides-Extra: notebook
+Requires-Dist: ipywidgets>=8.0.0; extra == "notebook"
+Requires-Dist: ipykernel>=6.0.0; extra == "notebook"
+Dynamic: license-file
+
+# QuantResearchStarter
+
+A modular, open-source quantitative research and backtesting framework designed for clarity and extensibility. Perfect for researchers, students, and developers interested in quantitative finance.
+
+![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+[![CI](https://github.com/username/QuantResearchStarter/actions/workflows/ci.yml/badge.svg)](https://github.com/username/QuantResearchStarter/actions)
+
+## Features
+
+- **Data Management**: Download real data or generate synthetic data for testing
+- **Factor Library**: Implement momentum, value, size, and volatility factors
+- **Backtesting Engine**: Vectorized backtester with transaction costs and constraints
+- **Risk Metrics**: Comprehensive performance and risk analytics
+- **Modular Design**: Easy to extend with new factors and strategies
+- **Production Ready**: Type hints, tests, CI/CD, and documentation
+
+## Quick Start
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/username/QuantResearchStarter.git
+cd QuantResearchStarter
+
+# Install package in development mode
+pip install -e .
+
+# Install development dependencies
+pip install -e ".[dev]"
