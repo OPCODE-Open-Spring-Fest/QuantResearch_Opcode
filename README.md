@@ -1,23 +1,42 @@
 # QuantResearchStarter
 
-A modular, open-source quantitative research and backtesting framework designed for clarity and extensibility. Perfect for researchers, students, and developers interested in quantitative finance.
-
-![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![CI](https://github.com/username/QuantResearchStarter/actions/workflows/ci.yml/badge.svg)](https://github.com/username/QuantResearchStarter/actions)
 
-## Features
+A modular, open-source quantitative research and backtesting framework built for clarity, reproducibility, and extensibility. Ideal for researchers, students, and engineers building and testing systematic strategies.
 
-- **Data Management**: Download real data or generate synthetic data for testing
-- **Factor Library**: Implement momentum, value, size, and volatility factors
-- **Backtesting Engine**: Vectorized backtester with transaction costs and constraints
-- **Risk Metrics**: Comprehensive performance and risk analytics
-- **Modular Design**: Easy to extend with new factors and strategies
-- **Production Ready**: Type hints, tests, CI/CD, and documentation
+---
 
-## Quick Start
+## Why this project
 
-### Installation
+QuantResearchStarter aims to provide a clean, well-documented starting point for quantitative research and backtesting. It focuses on:
+
+* **Readability**: idiomatic Python, type hints, and small modules you can read and change quickly.
+* **Testability**: deterministic vectorized backtests with unit tests and CI.
+* **Extensibility**: plug-in friendly factor & data adapters so you can try new ideas fast.
+
+---
+
+## Key features
+
+* **Data management** — download market data or generate synthetic price series for experiments.
+* **Factor library** — example implementations of momentum, value, size, and volatility factors.
+* **Vectorized backtesting engine** — supports transaction costs, slippage, and portfolio constraints.
+* **Risk & performance analytics** — returns, drawdowns, Sharpe, turnover, and other risk metrics.
+* **CLI & scripts** — small tools to generate data, compute factors, and run backtests from the terminal.
+* **Production-ready utilities** — type hints, tests, continuous integration, and documentation scaffolding.
+
+---
+
+## Quick start
+
+### Requirements
+
+* Python 3.10+
+* pip
+
+### Install locally
 
 ```bash
 # Clone the repository
@@ -27,26 +46,141 @@ cd QuantResearchStarter
 # Install package in development mode
 pip install -e .
 
-# Install development dependencies
+# Install development dependencies (tests, linters, docs)
 pip install -e ".[dev]"
 
-# Optional UI
+# Optional UI dependencies
 pip install streamlit plotly
 ```
 
-### Quick Demo
+### Demo (one-line)
 
 ```bash
 make demo
 ```
 
-Or step-by-step:
+### Step-by-step demo
 
 ```bash
+# generate synthetic sample price series
 qrs generate-data -o data_sample/sample_prices.csv -s 5 -d 365
+
+# compute example factors
 qrs compute-factors -d data_sample/sample_prices.csv -f momentum -f value -o output/factors.csv
+
+# run a backtest
 qrs backtest -d data_sample/sample_prices.csv -s output/factors.csv -o output/backtest_results.json
 
-# Streamlit dashboard (optional)
+# optional: start the Streamlit dashboard
 streamlit run src/quant_research_starter/dashboard/streamlit_app.py
 ```
+
+---
+
+## Example: small strategy (concept)
+
+```python
+from quant_research_starter.backtest import Backtester
+from quant_research_starter.data import load_prices
+from quant_research_starter.factors import Momentum
+
+prices = load_prices("data_sample/sample_prices.csv")
+factor = Momentum(window=63)
+scores = factor.compute(prices)
+
+bt = Backtester(prices, signals=scores, capital=1_000_000)
+results = bt.run()
+print(results.performance.summary())
+```
+
+> The code above is illustrative—see `examples/` for fully working notebooks and scripts.
+
+---
+
+## CLI reference
+
+Run `qrs --help` or `qrs <command> --help` for full usage. Main commands include:
+
+* `qrs generate-data` — create synthetic price series or download data from adapters
+* `qrs compute-factors` — calculate and export factor scores
+* `qrs backtest` — run the vectorized backtest and export results
+
+---
+
+## Project structure (overview)
+
+```
+QuantResearchStarter/
+├─ src/quant_research_starter/
+│  ├─ data/              # data loaders & adapters
+│  ├─ factors/           # factor implementations
+│  ├─ backtest/          # backtester & portfolio logic
+│  ├─ analytics/         # performance and risk metrics
+│  ├─ cli/               # command line entry points
+│  └─ dashboard/         # optional Streamlit dashboard
+├─ examples/             # runnable notebooks & example strategies
+├─ tests/                # unit + integration tests
+└─ docs/                 # documentation source
+```
+
+---
+
+## Tests & CI
+
+We include unit tests and a CI workflow (GitHub Actions). Run tests locally with:
+
+```bash
+pytest -q
+```
+
+The CI pipeline runs linting, unit tests, and builds docs on push/PR.
+
+---
+
+## Contributing
+
+Contributions are very welcome. Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new behavior
+4. Open a pull request with a clear description and rationale
+
+Please review `CONTRIBUTING.md` and the `CODE_OF_CONDUCT.md` before submitting.
+
+---
+
+## AI policy — short & practical
+
+**Yes — you are allowed to use AI tools** (ChatGPT, Copilot, Codeium, etc.) to help develop, prototype, or document code in this repository.
+
+A few friendly guidelines:
+
+* **Be transparent** when a contribution is substantially generated by an AI assistant — add a short note in the PR or commit message (e.g., "Generated with ChatGPT; reviewed and adapted by <your-name>").
+* **Review and test** all AI-generated code. Treat it as a helpful draft, not final production-quality code.
+* **Follow licensing** and attribution rules for any external snippets the AI suggests. Don’t paste large verbatim copyrighted material.
+* **Security & correctness**: double-check numerical logic, data handling, and anything that affects trading decisions.
+
+This policy is intentionally permissive: we want the community to move fast while keeping quality and safety in mind.
+
+---
+
+## License
+
+This project is licensed under the MIT License — see the `LICENSE` file for details.
+
+---
+
+## Acknowledgements
+
+Built with inspiration from open-source quant libraries and the research community. If you use this project in papers or public work, a short citation or mention is appreciated.
+
+---
+
+If you'd like, I can also:
+
+* produce a shorter README for a GitHub landing page (one-screen summary),
+* create a `CONTRIBUTING.md` snippet for how to document AI-assisted PRs, or
+* generate example Jupyter notebooks that exercise the backtester.
+
+Tell me which of those you'd like and I'll add them next.
