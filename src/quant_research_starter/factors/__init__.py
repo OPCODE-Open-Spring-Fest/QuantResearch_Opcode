@@ -1,19 +1,19 @@
 """Factors module public API."""
 
 from .base import Factor
+from .bollinger import BollingerBandsFactor
 from .momentum import CrossSectionalMomentum, MomentumFactor
 from .size import SizeFactor
 from .value import ValueFactor
 from .volatility import IdiosyncraticVolatility, VolatilityFactor
-from .bollinger import BollingerBandsFactor
-
 
 __all__ = [
     "Factor",
-    "MomentumFactor",
+    "BollingerBandsFactor",
     "CrossSectionalMomentum",
-    "ValueFactor",
+    "MomentumFactor",
     "SizeFactor",
-    "VolatilityFactor",
+    "ValueFactor",
     "IdiosyncraticVolatility",
+    "VolatilityFactor",
 ]
