@@ -5,11 +5,11 @@ import pandas as pd
 import pytest
 
 from quant_research_starter.factors import (
+    BollingerBandsFactor,
     MomentumFactor,
     SizeFactor,
     ValueFactor,
     VolatilityFactor,
-    BollingerBandsFactor,
 )
 
 
@@ -197,6 +197,7 @@ class TestVolatilityFactor:
             spearman_corr < -0.5
         ), f"volatility factor should be negatively correlated with realized volatility (spearman={spearman_corr})"
 
+
 class TestBollingerBandsFactor:
     """Test Bollinger Bands factor calculations."""
 
@@ -211,7 +212,7 @@ class TestBollingerBandsFactor:
         assert set(result.columns) == set(sample_prices.columns)
 
         # Values should be finite where enough data exists
-        valid_values = result.iloc[factor.lookback:].values.flatten()
+        valid_values = result.iloc[factor.lookback :].values.flatten()
         assert np.all(np.isfinite(valid_values)), "NaNs found after lookback period"
 
         # Mean of z-scores should be roughly centered near 0

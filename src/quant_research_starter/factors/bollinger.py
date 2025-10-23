@@ -1,4 +1,5 @@
 import pandas as pd
+
 from .base import Factor
 
 
@@ -8,7 +9,9 @@ class BollingerBandsFactor(Factor):
     z = (price - rolling_mean) / rolling_std
     """
 
-    def __init__(self, name: str = "bollinger_bands", lookback: int = 20, num_std: float = 2.0):
+    def __init__(
+        self, name: str = "bollinger_bands", lookback: int = 20, num_std: float = 2.0
+    ):
         super().__init__(name=name, lookback=lookback)
         self.num_std = num_std
 
