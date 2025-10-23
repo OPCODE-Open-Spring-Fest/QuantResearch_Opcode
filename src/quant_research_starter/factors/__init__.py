@@ -10,10 +10,10 @@ from .volatility import IdiosyncraticVolatility, VolatilityFactor
 __all__ = [
     "Factor",
     "BollingerBandsFactor",
-    "MomentumFactor",
     "CrossSectionalMomentum",
-    "ValueFactor",
+    "MomentumFactor",
     "SizeFactor",
-    "VolatilityFactor",
+    "ValueFactor",
     "IdiosyncraticVolatility",
+    "VolatilityFactor",
 ]
