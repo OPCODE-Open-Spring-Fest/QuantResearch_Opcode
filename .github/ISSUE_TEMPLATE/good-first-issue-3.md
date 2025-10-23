@@ -16,3 +16,4 @@ Modify CLI backtest command to also save a Plotly HTML chart for PnL.
 - CLI still supports Matplotlib PNG; Plotly HTML added.
 
 
+

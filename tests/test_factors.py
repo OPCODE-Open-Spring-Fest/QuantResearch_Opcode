@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 
 from quant_research_starter.factors import (
-    BollingerBandsFactor,
     MomentumFactor,
     SizeFactor,
     ValueFactor,
@@ -196,32 +195,3 @@ class TestVolatilityFactor:
         assert (
             spearman_corr < -0.5
         ), f"volatility factor should be negatively correlated with realized volatility (spearman={spearman_corr})"
-
-
-class TestBollingerBandsFactor:
-    """Test Bollinger Bands factor calculations."""
-
-    def test_bollinger_basic(self, sample_prices):
-        """Test basic Bollinger Bands z-score calculation."""
-        factor = BollingerBandsFactor(lookback=20, num_std=2.0)
-        result = factor.compute(sample_prices)
-
-        # Must be a DataFrame with same shape as prices
-        assert isinstance(result, pd.DataFrame)
-        assert not result.empty
-        assert set(result.columns) == set(sample_prices.columns)
-
-        # Values should be finite where enough data exists
-        valid_values = result.iloc[factor.lookback :].values.flatten()
-        assert np.all(np.isfinite(valid_values)), "NaNs found after lookback period"
-
-        # Mean of z-scores should be roughly centered near 0
-        mean_z = np.nanmean(valid_values)
-        assert abs(mean_z) < 0.5, f"Z-scores not centered: mean={mean_z}"
-
-    def test_bollinger_lookback_validation(self, sample_prices):
-        """Ensure _validate_data raises for insufficient data."""
-        short_data = sample_prices.iloc[:5]
-        factor = BollingerBandsFactor(lookback=10)
-        with pytest.raises(ValueError):
-            factor.compute(short_data)

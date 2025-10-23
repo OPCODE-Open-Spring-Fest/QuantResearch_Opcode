@@ -14,3 +14,6 @@ Teach `VectorizedBacktest` to rebalance weekly or monthly via a `rebalance_freq`
 
 ### Definition of Done
 - Tests pass; daily default unchanged.
+
+
+
