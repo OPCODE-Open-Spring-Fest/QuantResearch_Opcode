@@ -1,24 +1,17 @@
+### Summary
+Describe the change and why it’s needed.
 
-## Description
-
-> Give a brief description of the pull request.
+### Changes
+- 
 
 ### Testing
-
 - [ ] `pytest` passes locally
 - [ ] Linting passes (`ruff`, `black`)
 
-## Semver Changes
+### Screenshots (optional)
 
-- [ ] Patch (bug fix, no new features)
-- [ ] Minor (new features, no breaking changes)
-- [ ] Major (breaking changes)
+### Related Issues
+Fixes #
 
-## Issues
 
-> List any issues that this pull request closes.
-
-## Checklist
-
-- [ ] I have read the [Contributing Guidelines](../Contributor_Guide/Contruting.md).
 
