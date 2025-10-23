@@ -174,13 +174,3 @@ This project is licensed under the MIT License — see the `LICENSE` file for de
 ## Acknowledgements
 
 Built with inspiration from open-source quant libraries and the research community. If you use this project in papers or public work, a short citation or mention is appreciated.
-
----
-
-If you'd like, I can also:
-
-* produce a shorter README for a GitHub landing page (one-screen summary),
-* create a `CONTRIBUTING.md` snippet for how to document AI-assisted PRs, or
-* generate example Jupyter notebooks that exercise the backtester.
-
-Tell me which of those you'd like and I'll add them next.
