@@ -94,7 +94,7 @@ class VectorizedBacktest:
         rebalance_mask_df = pd.DataFrame(
             np.tile(rebalance_mask.values.reshape(-1, 1), (1, len(weights.columns))),
             index=weights.index,
-            columns=weights.columns
+            columns=weights.columns,
         )
         weights = weights.where(rebalance_mask_df, weights.shift(1).fillna(0.0))
 
