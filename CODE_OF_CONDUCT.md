@@ -1,24 +1,20 @@
-# Code of Conduct
+### Code of Conduct
 
-## Our Pledge
+We are committed to fostering a welcoming and inclusive community.
 
-We pledge to make participation in our community a harassment-free experience for everyone, regardless of background or identity. We commit to fostering an open, welcoming, inclusive, and healthy community.
+#### Our Standards
+- Be respectful and considerate.
+- Assume good intent; seek to understand.
+- Accept constructive feedback gracefully.
+- Focus on what is best for the community.
 
-## Our Standards
+#### Unacceptable Behavior
+- Harassment, discrimination, or demeaning comments.
+- Trolling, personal attacks, or political flame wars.
+- Publishing others' private information without consent.
 
-**Positive behaviors include:**
-- Being respectful and empathetic
-- Providing constructive feedback gracefully
-- Focusing on what's best for the community
+#### Enforcement
+- Report incidents to the maintainers via `SECURITY.md` contact or GitHub.
+- Maintainers may take appropriate action, including warnings or bans.
 
-**Unacceptable behaviors include:**
-- Harassment, trolling, or personal attacks
-- Sexualized language or attention
-- Publishing others' private information
-- Any unprofessional conduct
-
-## Enforcement
-
-Instances of unacceptable behavior may be reported to community leaders at gs.technical@iiitbh.ac.in. All reports will be reviewed promptly and fairly.
-
-Community leaders will take appropriate action, which may include warnings, temporary bans, or permanent bans for violations.
+Adapted from the Contributor Covenant.
