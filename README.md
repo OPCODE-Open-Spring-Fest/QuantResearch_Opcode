@@ -22,7 +22,7 @@ QuantResearchStarter provides a clean, well-documented starting point for quanti
 
 * **Data management** — download market data or generate synthetic price series for experiments.
 * **Factor library** — example implementations of momentum, value, size, and volatility factors.
-* **Vectorized backtesting engine** — supports transaction costs, slippage, and portfolio constraints.
+* **Vectorized backtesting engine** — supports configurable rebalancing frequencies (daily, weekly, monthly), transaction costs, slippage, and portfolio constraints.
 * **Risk & performance analytics** — returns, drawdowns, Sharpe, turnover, and other risk metrics.
 * **CLI & scripts** — small tools to generate data, compute factors, and run backtests from the terminal.
 * **Production-ready utilities** — type hints, tests, continuous integration, and documentation scaffolding.
@@ -80,7 +80,7 @@ streamlit run src/quant_research_starter/dashboard/streamlit_app.py
 ## Minimal example
 
 ```python
-from quant_research_starter.backtest import Backtester
+from quant_research_starter.backtest import VectorizedBacktest
 from quant_research_starter.data import load_prices
 from quant_research_starter.factors import Momentum
 
@@ -88,9 +88,21 @@ prices = load_prices("data_sample/sample_prices.csv")
 factor = Momentum(window=63)
 scores = factor.compute(prices)
 
-bt = Backtester(prices, signals=scores, capital=1_000_000)
-results = bt.run()
-print(results.performance.summary())
+# Daily rebalancing (default)
+bt_daily = VectorizedBacktest(prices, signals=scores, capital=1_000_000)
+results_daily = bt_daily.run()
+
+# Weekly rebalancing
+bt_weekly = VectorizedBacktest(prices, signals=scores, capital=1_000_000, rebalance_freq="W")
+results_weekly = bt_weekly.run()
+
+# Monthly rebalancing
+bt_monthly = VectorizedBacktest(prices, signals=scores, capital=1_000_000, rebalance_freq="M")
+results_monthly = bt_monthly.run()
+
+print(f"Daily: {results_daily['total_return']:.2%}")
+print(f"Weekly: {results_weekly['total_return']:.2%}")
+print(f"Monthly: {results_monthly['total_return']:.2%}")
 ```
 
 > See the `examples/` directory for fully working notebooks and scripts.

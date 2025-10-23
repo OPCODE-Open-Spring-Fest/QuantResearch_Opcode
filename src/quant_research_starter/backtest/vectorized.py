@@ -1,16 +1,15 @@
 """Vectorized backtesting engine."""
 
 from typing import Dict, Optional
-
+import numpy as np
 import pandas as pd
-
 
 class VectorizedBacktest:
     """
     Vectorized backtester for quantitative strategies.
 
     Features:
-    - Daily rebalancing with position sizing
+    - Configurable rebalancing frequency (daily, weekly, monthly)
     - Transaction costs (fixed and proportional)
     - Portfolio constraints (leverage, concentration)
     - Realistic market dynamics (slippage, execution)
@@ -23,9 +22,21 @@ class VectorizedBacktest:
         initial_capital: float = 1_000_000,
         transaction_cost: float = 0.001,  # 10 bps
         max_leverage: float = 1.0,
-        min_position_size: float = 0.001,  # 0.1% of portfolio
+        min_position_size: float = 0.001,  
         rebalance_freq: str = "D",
     ):
+        """
+        Initialize vectorized backtester.
+
+        Args:
+            prices: DataFrame with price data (symbols as columns, dates as index)
+            signals: DataFrame with trading signals (symbols as columns, dates as index)
+            initial_capital: Starting capital amount
+            transaction_cost: Transaction cost as fraction of trade value
+            max_leverage: Maximum portfolio leverage
+            min_position_size: Minimum position size as fraction of portfolio
+            rebalance_freq: Rebalancing frequency ("D"=daily, "W"=weekly, "M"=monthly)
+        """
         self.prices = prices
         self.signals = signals
         self.initial_capital = initial_capital
@@ -64,7 +75,7 @@ class VectorizedBacktest:
         """
         print("Running backtest...")
 
-        # Vectorized returns-based backtest with daily rebalancing
+        # Vectorized returns-based backtest with configurable rebalancing frequency
         returns_df = self.prices.pct_change().dropna()
         aligned_signals = self.signals.loc[returns_df.index]
 
@@ -74,6 +85,16 @@ class VectorizedBacktest:
         )
         # Ensure full DataFrame with same columns order
         weights = weights.reindex(columns=self.prices.columns).fillna(0.0)
+
+        # Apply rebalancing frequency - only rebalance on specified dates
+        rebalance_mask = weights.index.map(self._should_rebalance)
+        # Broadcast mask to match DataFrame shape
+        rebalance_mask_df = pd.DataFrame(
+            np.tile(rebalance_mask.values.reshape(-1, 1), (1, len(weights.columns))), 
+            index=weights.index, 
+            columns=weights.columns
+        )
+        weights = weights.where(rebalance_mask_df, weights.shift(1).fillna(0.0))
 
         # Previous day weights for PnL calculation
         weights_prev = weights.shift(1).fillna(0.0)
@@ -106,9 +127,16 @@ class VectorizedBacktest:
 
     def _should_rebalance(self, date: pd.Timestamp) -> bool:
         """Check if we should rebalance on given date."""
-        # Simple daily rebalancing for now
-        # Could be extended for weekly/monthly rebalancing
-        return True
+        if self.rebalance_freq == "D":
+            return True
+        elif self.rebalance_freq == "W":
+            # Rebalance on Mondays (week start)
+            return date.weekday() == 0
+        elif self.rebalance_freq == "M":
+            # Rebalance on first trading day of month
+            return date.day == 1
+        else:
+            raise ValueError(f"Unsupported rebalance frequency: {self.rebalance_freq}")
 
     def _calculate_weights(self, signals: pd.Series, scheme: str) -> pd.Series:
         """Convert signals to portfolio weights."""
