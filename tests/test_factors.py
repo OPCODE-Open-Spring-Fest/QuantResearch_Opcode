@@ -3,14 +3,14 @@
 import numpy as np
 import pandas as pd
 import pytest
-
-from quant_research_starters.factors import (
+from quant_research_starter.factors import (
     BollingerBandsFactor,
     MomentumFactor,
     SizeFactor,
     ValueFactor,
     VolatilityFactor,
 )
+
 
 @pytest.fixture
 def sample_prices():
