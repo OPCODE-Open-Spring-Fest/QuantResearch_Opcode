@@ -155,11 +155,11 @@ class TestVectorizedBacktest:
         # Test daily rebalancing
         backtest_daily = VectorizedBacktest(prices, signals, rebalance_freq="D")
         for date in dates:
-            assert backtest_daily._should_rebalance(date) == True
+            assert backtest_daily._should_rebalance(date)
 
         # Test weekly rebalancing (should rebalance on Mondays)
         backtest_weekly = VectorizedBacktest(prices, signals, rebalance_freq="W")
-        for i, date in enumerate(dates):
+        for _i, date in enumerate(dates):
             expected = date.weekday() == 0  # Monday
             assert backtest_weekly._should_rebalance(date) == expected
 
@@ -172,7 +172,7 @@ class TestVectorizedBacktest:
     def test_invalid_rebalance_frequency(self, sample_data):
         """Test that invalid rebalance frequency raises error."""
         prices, signals = sample_data
-        
+
         with pytest.raises(ValueError, match="Unsupported rebalance frequency"):
             backtest = VectorizedBacktest(prices, signals, rebalance_freq="X")
             backtest.run()

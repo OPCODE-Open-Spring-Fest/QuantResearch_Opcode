@@ -1,8 +1,10 @@
 """Vectorized backtesting engine."""
 
 from typing import Dict, Optional
+
 import numpy as np
 import pandas as pd
+
 
 class VectorizedBacktest:
     """
@@ -22,7 +24,7 @@ class VectorizedBacktest:
         initial_capital: float = 1_000_000,
         transaction_cost: float = 0.001,  # 10 bps
         max_leverage: float = 1.0,
-        min_position_size: float = 0.001,  
+        min_position_size: float = 0.001,
         rebalance_freq: str = "D",
     ):
         """
@@ -90,8 +92,8 @@ class VectorizedBacktest:
         rebalance_mask = weights.index.map(self._should_rebalance)
         # Broadcast mask to match DataFrame shape
         rebalance_mask_df = pd.DataFrame(
-            np.tile(rebalance_mask.values.reshape(-1, 1), (1, len(weights.columns))), 
-            index=weights.index, 
+            np.tile(rebalance_mask.values.reshape(-1, 1), (1, len(weights.columns))),
+            index=weights.index,
             columns=weights.columns
         )
         weights = weights.where(rebalance_mask_df, weights.shift(1).fillna(0.0))
