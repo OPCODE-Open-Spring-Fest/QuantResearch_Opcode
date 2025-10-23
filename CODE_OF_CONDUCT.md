@@ -18,6 +18,3 @@ We are committed to fostering a welcoming and inclusive community.
 - Maintainers may take appropriate action, including warnings or bans.
 
 Adapted from the Contributor Covenant.
-
-
-
