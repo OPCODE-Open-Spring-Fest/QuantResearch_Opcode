@@ -12,6 +12,7 @@ src/quant_research_starter.egg-info/requires.txt
 src/quant_research_starter.egg-info/top_level.txt
 src/quant_research_starter/backtest/__init__.py
 src/quant_research_starter/backtest/vectorized.py
+src/quant_research_starter/dashboard/streamlit_app.py
 src/quant_research_starter/data/__init__.py
 src/quant_research_starter/data/downloaders.py
 src/quant_research_starter/data/init.py
