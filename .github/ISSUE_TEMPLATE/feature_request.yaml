@@ -8,14 +8,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please explain what is in your mind, we would like to hear it from you! 🤠
+        Please explain what is in your mind, we would like to hear it from you! 
       
       
   - type: textarea
     id: explaining
     attributes:
       label: So, what is it about?
-      description: Please describe what you're requesting for. So, we Akarui Team can understand your request better and work on it faster!
+      description: Please describe what you're requesting for. So, we Quant Team can understand your request better and work on it faster!
       placeholder: It's about...
     validations:
       required: true
