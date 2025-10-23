@@ -3,6 +3,11 @@
 
 > Give a brief description of the pull request.
 
+### Testing
+
+- [ ] `pytest` passes locally
+- [ ] Linting passes (`ruff`, `black`)
+
 ## Semver Changes
 
 - [ ] Patch (bug fix, no new features)
