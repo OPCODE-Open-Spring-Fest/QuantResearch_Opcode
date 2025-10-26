@@ -6,17 +6,19 @@ Usage:
 """
 
 import time
+
 import numpy as np
 import pandas as pd
 
 from quant_research_starter.factors import (
-    MomentumFactor,
-    ValueFactor,
-    SizeFactor,
-    VolatilityFactor,
-    IdiosyncraticVolatility,
     BollingerBandsFactor,
+    IdiosyncraticVolatility,
+    MomentumFactor,
+    SizeFactor,
+    ValueFactor,
+    VolatilityFactor,
 )
+
 
 def generate_synthetic_prices(n_assets: int = 500, n_days: int = 252 * 3) -> pd.DataFrame:
     """Generate synthetic random walk price data for testing."""
