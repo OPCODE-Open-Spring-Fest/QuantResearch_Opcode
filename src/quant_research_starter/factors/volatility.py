@@ -20,6 +20,7 @@ Key improvements included:
 
 from __future__ import annotations
 
+import warnings
 from typing import Optional
 
 import numpy as np
@@ -35,9 +36,7 @@ except Exception:
     except Exception:
         # Minimal Factor stub so this module can be inspected/tested in isolation.
         class Factor:
-            def __init__(
-                self, name: Optional[str] = None, lookback: Optional[int] = None
-            ):
+            def __init__(self, name: Optional[str] = None, lookback: Optional[int] = None):
                 self.name = name or "factor"
                 self.lookback = lookback or 0
                 self._values: Optional[pd.DataFrame] = None
@@ -48,7 +47,6 @@ except Exception:
 
             def __repr__(self) -> str:
                 return f"<Factor name={self.name} lookback={self.lookback}>"
-
 
 # Constants
 TRADING_DAYS = 252
@@ -95,17 +93,15 @@ class VolatilityFactor(Factor):
         self._validate_data(prices)
 
         if prices.shape[0] < self.lookback:
-            raise ValueError(
-                f"Need at least {self.lookback} rows of data to compute volatility"
-            )
+            raise ValueError(f"Need at least {self.lookback} rows of data to compute volatility")
 
         # pct change -> returns
         returns = prices.pct_change()
 
         # rolling std (population, ddof=0) and annualize
-        vol = returns.rolling(window=self.lookback, min_periods=self.lookback).std(
-            ddof=0
-        ) * np.sqrt(TRADING_DAYS)
+        vol = returns.rolling(window=self.lookback, min_periods=self.lookback).std(ddof=0) * np.sqrt(
+            TRADING_DAYS
+        )
 
         # Trim initial rows that don't correspond to a full window
         if self.lookback > 1:
@@ -152,42 +148,26 @@ class IdiosyncraticVolatility(VolatilityFactor):
 
         # require enough rows to compute returns and rolling windows
         if prices.shape[0] < self.lookback + 1:
-            raise ValueError(
-                f"Need at least {self.lookback + 1} rows of data to compute idiosyncratic volatility"
-            )
+            raise ValueError(f"Need at least {self.lookback + 1} rows of data to compute idiosyncratic volatility")
 
         # daily returns
         returns = prices.pct_change().dropna()
         if returns.shape[0] < self.lookback:
-            raise ValueError(
-                f"Need at least {self.lookback} non-NA return rows to compute idio-vol"
-            )
+            raise ValueError(f"Need at least {self.lookback} non-NA return rows to compute idio-vol")
 
         # Market proxy: equal-weighted mean across assets
         market = returns.mean(axis=1)
 
         # Rolling means for covariance decomposition
-        returns_mean = returns.rolling(
-            window=self.lookback, min_periods=self.lookback
-        ).mean()
-        market_mean = market.rolling(
-            window=self.lookback, min_periods=self.lookback
-        ).mean()
+        returns_mean = returns.rolling(window=self.lookback, min_periods=self.lookback).mean()
+        market_mean = market.rolling(window=self.lookback, min_periods=self.lookback).mean()
 
         # Compute cov(ri, rm) via E[ri*rm] - E[ri]*E[rm]
-        e_ri_rm = (
-            returns.mul(market, axis=0)
-            .rolling(window=self.lookback, min_periods=self.lookback)
-            .mean()
-        )
+        e_ri_rm = returns.mul(market, axis=0).rolling(window=self.lookback, min_periods=self.lookback).mean()
         cov_with_mkt = e_ri_rm - returns_mean.mul(market_mean, axis=0)
 
         # market variance (vector) -- guard zeros
-        market_var = (
-            market.rolling(window=self.lookback, min_periods=self.lookback)
-            .var(ddof=0)
-            .replace(0, np.nan)
-        )
+        market_var = market.rolling(window=self.lookback, min_periods=self.lookback).var(ddof=0).replace(0, np.nan)
 
         # Beta: cov / var  (division broadcasted over columns)
         beta = cov_with_mkt.div(market_var, axis=0)
@@ -199,9 +179,9 @@ class IdiosyncraticVolatility(VolatilityFactor):
         residuals = returns - predicted
 
         # Rolling std of residuals (annualized)
-        idio_vol = residuals.rolling(
-            window=self.lookback, min_periods=self.lookback
-        ).std(ddof=0) * np.sqrt(TRADING_DAYS)
+        idio_vol = residuals.rolling(window=self.lookback, min_periods=self.lookback).std(ddof=0) * np.sqrt(
+            TRADING_DAYS
+        )
 
         # Trim to first full-window row
         if self.lookback > 1:
