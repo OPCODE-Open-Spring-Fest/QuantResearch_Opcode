@@ -18,6 +18,7 @@ src/quant_research_starter/data/downloaders.py
 src/quant_research_starter/data/init.py
 src/quant_research_starter/data/sample_loader.py
 src/quant_research_starter/data/synthetic.py
+src/quant_research_starter/examples/benchmark/benchmark_factors.py
 src/quant_research_starter/factors/__init__.py
 src/quant_research_starter/factors/base.py
 src/quant_research_starter/factors/bollinger.py

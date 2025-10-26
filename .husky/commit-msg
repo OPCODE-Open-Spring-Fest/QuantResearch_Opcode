@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 npm run commitlint ${1}
+=======
+npm run commitlint ${1}
+>>>>>>> 8d5d7c51f2ba0fc6db1b9abe844cee2182014d3c
