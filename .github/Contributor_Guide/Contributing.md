@@ -10,7 +10,7 @@ If you are new to <Project_Name>, please take a look at the [documentation](./Pr
 
 ## New Contributor Guide
 
-To get an overview of the codebase, check out the '[README.md](../src/README.md)' file in the `src` directory.
+To get an overview of the codebase, check out the '[README.md](../../README.md)' file in the root directory.
 
 that will help you understand the structure of the project.
 
