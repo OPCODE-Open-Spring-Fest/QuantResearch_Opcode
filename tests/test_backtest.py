@@ -150,7 +150,7 @@ class TestVectorizedBacktest:
         # Count the number of times weights change
         positions = results["positions"]
         position_changes = (positions.diff().abs().sum(axis=1) > 0).sum()
-        
+
         # Should be significantly fewer than daily (100 days)
         # Approximately ~14 weeks in 100 days
         assert position_changes < len(prices) - 1
@@ -168,7 +168,7 @@ class TestVectorizedBacktest:
         # Monthly rebalancing should result in fewer position changes than weekly
         positions = results["positions"]
         position_changes = (positions.diff().abs().sum(axis=1) > 0).sum()
-        
+
         # Should be significantly fewer than daily
         # Approximately ~3 months in 100 days
         assert position_changes < len(prices) - 1
@@ -177,7 +177,7 @@ class TestVectorizedBacktest:
         """Test that invalid rebalance frequency raises error."""
         prices, signals = sample_data
         backtest = VectorizedBacktest(prices, signals, rebalance_freq="X")
-        
+
         with pytest.raises(ValueError, match="Unsupported rebalance frequency"):
             backtest.run()
 

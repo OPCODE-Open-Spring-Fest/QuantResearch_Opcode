@@ -71,7 +71,7 @@ class VectorizedBacktest:
         # Track rebalancing
         prev_rebalance_date = None
         current_weights = pd.Series(0.0, index=self.prices.columns)
-        
+
         # Compute daily weights from signals (rebalance only on rebalance dates)
         weights_list = []
         for date in returns_df.index:
@@ -79,10 +79,10 @@ class VectorizedBacktest:
                 # Rebalance: compute new target weights
                 current_weights = self._calculate_weights(aligned_signals.loc[date], weight_scheme)
                 prev_rebalance_date = date
-            
+
             # Append current weights (maintain between rebalances)
             weights_list.append(current_weights)
-        
+
         weights = pd.DataFrame(weights_list, index=returns_df.index, columns=self.prices.columns).fillna(0.0)
 
         # Previous day weights for PnL calculation
@@ -116,18 +116,18 @@ class VectorizedBacktest:
 
     def _should_rebalance(self, date: pd.Timestamp, prev_rebalance_date: Optional[pd.Timestamp] = None) -> bool:
         """Check if we should rebalance on given date.
-        
+
         Args:
             date: Current date to check
             prev_rebalance_date: Last rebalance date (None for first rebalance)
-            
+
         Returns:
             True if should rebalance, False otherwise
         """
         # Always rebalance on first date
         if prev_rebalance_date is None:
             return True
-            
+
         if self.rebalance_freq == "D":
             # Daily rebalancing
             return True
