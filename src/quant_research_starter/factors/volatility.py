@@ -20,11 +20,10 @@ Key improvements included:
 
 from __future__ import annotations
 
+from typing import Optional
 
 import numpy as np
 import pandas as pd
-
-from typing import Optional
 
 # Try to import package Factor base; fallback to a minimal stub if unavailable.
 try:
