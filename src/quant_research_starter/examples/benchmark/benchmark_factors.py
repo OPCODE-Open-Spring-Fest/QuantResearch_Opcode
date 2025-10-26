@@ -20,7 +20,9 @@ from quant_research_starter.factors import (
 )
 
 
-def generate_synthetic_prices(n_assets: int = 500, n_days: int = 252 * 3) -> pd.DataFrame:
+def generate_synthetic_prices(
+    n_assets: int = 500, n_days: int = 252 * 3
+) -> pd.DataFrame:
     """Generate synthetic random walk price data for testing."""
     np.random.seed(42)
     returns = np.random.normal(0, 0.01, size=(n_days, n_assets))
@@ -36,7 +38,9 @@ def benchmark_factor(factor, prices: pd.DataFrame):
     _ = factor.compute(prices)
     end = time.time()
     elapsed = end - start
-    print(f"{factor.name:<25} | Lookback: {factor.lookback:<5} | Time: {elapsed:.3f} sec")
+    print(
+        f"{factor.name:<25} | Lookback: {factor.lookback:<5} | Time: {elapsed:.3f} sec"
+    )
 
 
 def main():
