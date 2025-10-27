@@ -53,29 +53,6 @@ pip install -e ".[dev]"
 pip install streamlit plotly
 ```
 
-### Quick CLI Usage
-
-After installation, you can use the CLI in two ways:
-
-**Option 1: Direct command (if PATH is configured)**
-```bash
-qrs --help
-# generate synthetic sample price series
-qrs generate-data -o data_sample/sample_prices.csv -s 5 -d 365
-# compute example factors
-qrs compute-factors -d data_sample/sample_prices.csv -f momentum -f value -o output/factors.csv
-# run a backtest
-qrs backtest -d data_sample/sample_prices.csv -s output/factors.csv -o output/backtest_results.json
-```
-
-**Option 2: Python module (always works)**
-```bash
-python -m quant_research_starter.cli --help
-python -m quant_research_starter.cli generate-data -o data_sample/sample_prices.csv -s 5 -d 365
-python -m quant_research_starter.cli compute-factors -d data_sample/sample_prices.csv -f momentum -f value
-python -m quant_research_starter.cli backtest -d data_sample/sample_prices.csv -s output/factors.csv -o output/backtest_results.json
-```
-
 ### Demo (one-line)
 
 ```bash
@@ -86,13 +63,13 @@ make demo
 
 ```bash
 # generate synthetic sample price series
-python -m quant_research_starter.cli generate-data -o data_sample/sample_prices.csv -s 5 -d 365
+qrs generate-data -o data_sample/sample_prices.csv -s 5 -d 365
 
 # compute example factors
-python -m quant_research_starter.cli compute-factors -d data_sample/sample_prices.csv -f momentum -f value -o output/factors.csv
+qrs compute-factors -d data_sample/sample_prices.csv -f momentum -f value -o output/factors.csv
 
 # run a backtest
-python -m quant_research_starter.cli backtest -d data_sample/sample_prices.csv -s output/factors.csv -o output/backtest_results.json
+qrs backtest -d data_sample/sample_prices.csv -s output/factors.csv -o output/backtest_results.json
 
 # optional: start the Streamlit dashboard
 streamlit run src/quant_research_starter/dashboard/streamlit_app.py
@@ -146,13 +123,11 @@ Supported frequencies:
 
 ## CLI reference
 
-Run `python -m quant_research_starter.cli --help` or `python -m quant_research_starter.cli <command> --help` for full usage. Main commands include:
+Run `qrs --help` or `qrs <command> --help` for full usage. Main commands include:
 
-* `python -m quant_research_starter.cli generate-data` — create synthetic price series or download data from adapters
-* `python -m quant_research_starter.cli compute-factors` — calculate and export factor scores
-* `python -m quant_research_starter.cli backtest` — run the vectorized backtest and export results
-
-**Note:** If you have the `qrs` command in your PATH, you can use `qrs` instead of `python -m quant_research_starter.cli`.
+* `qrs generate-data` — create synthetic price series or download data from adapters
+* `qrs compute-factors` — calculate and export factor scores
+* `qrs backtest` — run the vectorized backtest and export results
 
 ---
 
