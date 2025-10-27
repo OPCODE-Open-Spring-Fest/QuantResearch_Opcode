@@ -60,8 +60,8 @@ After installation, you can use the CLI in two ways:
 **Option 1: Direct command (if PATH is configured)**
 ```bash
 qrs --help
-qrs generate-data -o data/sample.csv -s 5 -d 365
-qrs compute-factors -d data/sample.csv -f momentum -f value
+python -m quant_research_starter.cli generate-data -o data_sample/sample_prices.csv -s 5 -d 365
+python -m quant_research_starter.cli compute-factors -d data_sample/sample_prices.csv -f momentum -f value -o output/factors.csv
 qrs backtest -d data/sample.csv -s output/factors.csv
 ```
 
@@ -70,7 +70,7 @@ qrs backtest -d data/sample.csv -s output/factors.csv
 python -m quant_research_starter.cli --help
 python -m quant_research_starter.cli generate-data -o data/sample.csv -s 5 -d 365
 python -m quant_research_starter.cli compute-factors -d data/sample.csv -f momentum -f value
-python -m quant_research_starter.cli backtest -d data/sample.csv -s output/factors.csv
+python -m quant_research_starter.cli backtest -d data_sample/sample_prices.csv -s output/factors.csv -o output/backtest_results.json
 ```
 
 ### Demo (one-line)
