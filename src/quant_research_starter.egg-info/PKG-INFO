@@ -65,7 +65,7 @@ QuantResearchStarter aims to provide a clean, well-documented starting point for
 
 * **Data management** — download market data or generate synthetic price series for experiments.
 * **Factor library** — example implementations of momentum, value, size, and volatility factors.
-* **Vectorized backtesting engine** — supports transaction costs, slippage, and portfolio constraints.
+* **Vectorized backtesting engine** — supports transaction costs, slippage, portfolio constraints, and configurable rebalancing frequencies (daily, weekly, monthly).
 * **Risk & performance analytics** — returns, drawdowns, Sharpe, turnover, and other risk metrics.
 * **CLI & scripts** — small tools to generate data, compute factors, and run backtests from the terminal.
 * **Production-ready utilities** — type hints, tests, continuous integration, and documentation scaffolding.
