@@ -1,7 +1,7 @@
 """CSV validator for user-provided historical price and signals files."""
 
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -323,7 +323,7 @@ def validate_signals_csv(
 
 def validate_input_csv(
     file_path: str, csv_type: str = "price", **kwargs
-) -> Dict[str, any]:
+) -> Dict[str, Any]:
     """
     General-purpose CSV validator with structured error reporting.
 
