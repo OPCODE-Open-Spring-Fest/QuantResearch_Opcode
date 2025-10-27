@@ -10,7 +10,7 @@ import pandas as pd
 from .backtest import VectorizedBacktest
 from .data import SampleDataLoader, SyntheticDataGenerator
 from .factors import MomentumFactor, SizeFactor, ValueFactor, VolatilityFactor
-from .metrics import RiskMetrics
+from .metrics import RiskMetrics, create_equity_curve_plot
 
 
 @click.group()
@@ -127,7 +127,13 @@ def compute_factors(data_file, factors, output):
     help="Output file for results",
 )
 @click.option("--plot/--no-plot", default=True, help="Generate plot")
-def backtest(data_file, signals_file, initial_capital, output, plot):
+@click.option(
+    "--plotly",
+    is_flag=True,
+    default=False,
+    help="Also generate interactive Plotly HTML chart"
+)
+def backtest(data_file, signals_file, initial_capital, output, plot, plotly):
     """Run backtest with given signals."""
     click.echo("Running backtest...")
 
@@ -213,6 +219,20 @@ def backtest(data_file, signals_file, initial_capital, output, plot):
         plt.close()
 
         click.echo(f"Plot saved -> {plot_path}")
+
+    # Generate Plotly HTML chart if requested
+    if plotly:
+        html_path = output_path.parent / "backtest_plot.html"
+
+        create_equity_curve_plot(
+            dates=results_dict["dates"],
+            portfolio_values=results_dict["portfolio_value"],
+            initial_capital=initial_capital,
+            output_path=str(html_path),
+            plot_type="html"
+        )
+
+        click.echo(f"Plotly HTML chart saved -> {html_path}")
 
     click.echo("Backtest completed!")
     click.echo(f"Final portfolio value: ${results['final_value']:,.2f}")
