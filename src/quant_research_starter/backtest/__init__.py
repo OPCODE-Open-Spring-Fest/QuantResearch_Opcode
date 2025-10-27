@@ -1,4 +1,4 @@
-"""Backtest module public API."""
+"""Backtesting engines and portfolio simulation."""
 
 from .vectorized import VectorizedBacktest
 

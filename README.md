@@ -22,7 +22,7 @@ QuantResearchStarter aims to provide a clean, well-documented starting point for
 
 * **Data management** — download market data or generate synthetic price series for experiments.
 * **Factor library** — example implementations of momentum, value, size, and volatility factors.
-* **Vectorized backtesting engine** — supports transaction costs, slippage, and portfolio constraints.
+* **Vectorized backtesting engine** — supports transaction costs, slippage, portfolio constraints, and configurable rebalancing frequencies (daily, weekly, monthly).
 * **Risk & performance analytics** — returns, drawdowns, Sharpe, turnover, and other risk metrics.
 * **CLI & scripts** — small tools to generate data, compute factors, and run backtests from the terminal.
 * **Production-ready utilities** — type hints, tests, continuous integration, and documentation scaffolding.
@@ -112,6 +112,30 @@ bt = Backtester(prices, signals=scores, capital=1_000_000)
 results = bt.run()
 print(results.performance.summary())
 ```
+
+### Rebalancing Frequency
+
+The backtester supports different rebalancing frequencies to match your strategy needs:
+
+```python
+from quant_research_starter.backtest import VectorizedBacktest
+
+# Daily rebalancing (default)
+bt_daily = VectorizedBacktest(prices, signals, rebalance_freq="D")
+
+# Weekly rebalancing (reduces turnover and transaction costs)
+bt_weekly = VectorizedBacktest(prices, signals, rebalance_freq="W")
+
+# Monthly rebalancing (lowest turnover)
+bt_monthly = VectorizedBacktest(prices, signals, rebalance_freq="M")
+
+results = bt_monthly.run()
+```
+
+Supported frequencies:
+- `"D"`: Daily rebalancing (default)
+- `"W"`: Weekly rebalancing (rebalances when the week changes)
+- `"M"`: Monthly rebalancing (rebalances when the month changes)
 
 > The code above is illustrative—see `examples/` for fully working notebooks and scripts.
 

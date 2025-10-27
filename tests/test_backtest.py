@@ -125,3 +125,83 @@ class TestVectorizedBacktest:
 
         # With costs should have lower final value (or equal)
         assert results_with_cost["final_value"] <= results_no_cost["final_value"]
+
+    def test_rebalance_frequency_daily(self, sample_data):
+        """Test daily rebalancing (default behavior)."""
+        prices, signals = sample_data
+        backtest = VectorizedBacktest(prices, signals, rebalance_freq="D")
+        results = backtest.run()
+
+        # Check that backtest runs successfully
+        assert results["final_value"] > 0
+        assert len(results["portfolio_value"]) == len(prices)
+
+    def test_rebalance_frequency_weekly(self, sample_data):
+        """Test weekly rebalancing."""
+        prices, signals = sample_data
+        backtest = VectorizedBacktest(prices, signals, rebalance_freq="W")
+        results = backtest.run()
+
+        # Check that backtest runs successfully
+        assert results["final_value"] > 0
+        assert len(results["portfolio_value"]) == len(prices)
+
+        # Weekly rebalancing should result in fewer position changes
+        # Count the number of times weights change
+        positions = results["positions"]
+        position_changes = (positions.diff().abs().sum(axis=1) > 0).sum()
+
+        # Should be significantly fewer than daily (100 days)
+        # Approximately ~14 weeks in 100 days
+        assert position_changes < len(prices) - 1
+
+    def test_rebalance_frequency_monthly(self, sample_data):
+        """Test monthly rebalancing."""
+        prices, signals = sample_data
+        backtest = VectorizedBacktest(prices, signals, rebalance_freq="M")
+        results = backtest.run()
+
+        # Check that backtest runs successfully
+        assert results["final_value"] > 0
+        assert len(results["portfolio_value"]) == len(prices)
+
+        # Monthly rebalancing should result in fewer position changes than weekly
+        positions = results["positions"]
+        position_changes = (positions.diff().abs().sum(axis=1) > 0).sum()
+
+        # Should be significantly fewer than daily
+        # Approximately ~3 months in 100 days
+        assert position_changes < len(prices) - 1
+
+    def test_rebalance_frequency_invalid(self, sample_data):
+        """Test that invalid rebalance frequency raises error."""
+        prices, signals = sample_data
+        backtest = VectorizedBacktest(prices, signals, rebalance_freq="X")
+
+        with pytest.raises(ValueError, match="Unsupported rebalance frequency"):
+            backtest.run()
+
+    def test_rebalance_reduces_turnover(self, sample_data):
+        """Test that less frequent rebalancing reduces turnover."""
+        prices, signals = sample_data
+
+        # Daily rebalancing
+        backtest_daily = VectorizedBacktest(
+            prices, signals, rebalance_freq="D", transaction_cost=0.001
+        )
+        results_daily = backtest_daily.run()
+
+        # Monthly rebalancing
+        backtest_monthly = VectorizedBacktest(
+            prices, signals, rebalance_freq="M", transaction_cost=0.001
+        )
+        results_monthly = backtest_monthly.run()
+
+        # Count position changes as proxy for turnover
+        daily_changes = (results_daily["positions"].diff().abs().sum(axis=1) > 0).sum()
+        monthly_changes = (
+            results_monthly["positions"].diff().abs().sum(axis=1) > 0
+        ).sum()
+
+        # Monthly should have fewer rebalances
+        assert monthly_changes < daily_changes
