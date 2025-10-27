@@ -15,12 +15,12 @@ def test_plotly_html_creation():
         portfolio_values=portfolio_values,
         initial_capital=1000000,
         output_path=test_html_path,
-        plot_type="html"
+        plot_type="html",
     )
 
     # Verify file was created
     assert os.path.exists(html_path)
-    assert html_path.endswith('.html')
+    assert html_path.endswith(".html")
     assert os.path.getsize(html_path) > 1000
 
     # Cleanup
@@ -42,11 +42,11 @@ def test_plotly_fallback_to_matplotlib():
         portfolio_values=portfolio_values,
         initial_capital=1000000,
         output_path=test_png_path,
-        plot_type="png"
+        plot_type="png",
     )
 
     assert os.path.exists(png_path)
-    assert png_path.endswith('.png')
+    assert png_path.endswith(".png")
 
     # Cleanup
     if os.path.exists(png_path):

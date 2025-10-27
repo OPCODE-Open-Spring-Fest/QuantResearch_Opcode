@@ -131,7 +131,7 @@ def compute_factors(data_file, factors, output):
     "--plotly",
     is_flag=True,
     default=False,
-    help="Also generate interactive Plotly HTML chart"
+    help="Also generate interactive Plotly HTML chart",
 )
 def backtest(data_file, signals_file, initial_capital, output, plot, plotly):
     """Run backtest with given signals."""
@@ -229,7 +229,7 @@ def backtest(data_file, signals_file, initial_capital, output, plot, plotly):
             portfolio_values=results_dict["portfolio_value"],
             initial_capital=initial_capital,
             output_path=str(html_path),
-            plot_type="html"
+            plot_type="html",
         )
 
         click.echo(f"Plotly HTML chart saved -> {html_path}")
