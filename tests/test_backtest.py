@@ -186,16 +186,22 @@ class TestVectorizedBacktest:
         prices, signals = sample_data
 
         # Daily rebalancing
-        backtest_daily = VectorizedBacktest(prices, signals, rebalance_freq="D", transaction_cost=0.001)
+        backtest_daily = VectorizedBacktest(
+            prices, signals, rebalance_freq="D", transaction_cost=0.001
+        )
         results_daily = backtest_daily.run()
 
         # Monthly rebalancing
-        backtest_monthly = VectorizedBacktest(prices, signals, rebalance_freq="M", transaction_cost=0.001)
+        backtest_monthly = VectorizedBacktest(
+            prices, signals, rebalance_freq="M", transaction_cost=0.001
+        )
         results_monthly = backtest_monthly.run()
 
         # Count position changes as proxy for turnover
         daily_changes = (results_daily["positions"].diff().abs().sum(axis=1) > 0).sum()
-        monthly_changes = (results_monthly["positions"].diff().abs().sum(axis=1) > 0).sum()
+        monthly_changes = (
+            results_monthly["positions"].diff().abs().sum(axis=1) > 0
+        ).sum()
 
         # Monthly should have fewer rebalances
         assert monthly_changes < daily_changes

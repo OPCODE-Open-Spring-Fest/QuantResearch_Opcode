@@ -77,13 +77,17 @@ class VectorizedBacktest:
         for date in returns_df.index:
             if self._should_rebalance(date, prev_rebalance_date):
                 # Rebalance: compute new target weights
-                current_weights = self._calculate_weights(aligned_signals.loc[date], weight_scheme)
+                current_weights = self._calculate_weights(
+                    aligned_signals.loc[date], weight_scheme
+                )
                 prev_rebalance_date = date
 
             # Append current weights (maintain between rebalances)
             weights_list.append(current_weights)
 
-        weights = pd.DataFrame(weights_list, index=returns_df.index, columns=self.prices.columns).fillna(0.0)
+        weights = pd.DataFrame(
+            weights_list, index=returns_df.index, columns=self.prices.columns
+        ).fillna(0.0)
 
         # Previous day weights for PnL calculation
         weights_prev = weights.shift(1).fillna(0.0)
@@ -114,7 +118,9 @@ class VectorizedBacktest:
 
         return self._generate_results()
 
-    def _should_rebalance(self, date: pd.Timestamp, prev_rebalance_date: Optional[pd.Timestamp] = None) -> bool:
+    def _should_rebalance(
+        self, date: pd.Timestamp, prev_rebalance_date: Optional[pd.Timestamp] = None
+    ) -> bool:
         """Check if we should rebalance on given date.
 
         Args:
@@ -133,15 +139,21 @@ class VectorizedBacktest:
             return True
         elif self.rebalance_freq == "W":
             # Weekly rebalancing - rebalance if week changed
-            return date.isocalendar()[1] != prev_rebalance_date.isocalendar()[1] or \
-                   date.year != prev_rebalance_date.year
+            return (
+                date.isocalendar()[1] != prev_rebalance_date.isocalendar()[1]
+                or date.year != prev_rebalance_date.year
+            )
         elif self.rebalance_freq == "M":
             # Monthly rebalancing - rebalance if month changed
-            return date.month != prev_rebalance_date.month or \
-                   date.year != prev_rebalance_date.year
+            return (
+                date.month != prev_rebalance_date.month
+                or date.year != prev_rebalance_date.year
+            )
         else:
-            raise ValueError(f"Unsupported rebalance frequency: {self.rebalance_freq}. "
-                           f"Supported frequencies: 'D' (daily), 'W' (weekly), 'M' (monthly)")
+            raise ValueError(
+                f"Unsupported rebalance frequency: {self.rebalance_freq}. "
+                f"Supported frequencies: 'D' (daily), 'W' (weekly), 'M' (monthly)"
+            )
 
     def _calculate_weights(self, signals: pd.Series, scheme: str) -> pd.Series:
         """Convert signals to portfolio weights."""
