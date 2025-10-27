@@ -64,16 +64,30 @@ class VectorizedBacktest:
         """
         print("Running backtest...")
 
-        # Vectorized returns-based backtest with daily rebalancing
+        # Vectorized returns-based backtest with configurable rebalancing
         returns_df = self.prices.pct_change().dropna()
         aligned_signals = self.signals.loc[returns_df.index]
 
-        # Compute daily target weights from signals
-        weights = aligned_signals.apply(
-            lambda row: self._calculate_weights(row, weight_scheme), axis=1
-        )
-        # Ensure full DataFrame with same columns order
-        weights = weights.reindex(columns=self.prices.columns).fillna(0.0)
+        # Track rebalancing
+        prev_rebalance_date = None
+        current_weights = pd.Series(0.0, index=self.prices.columns)
+
+        # Compute daily weights from signals (rebalance only on rebalance dates)
+        weights_list = []
+        for date in returns_df.index:
+            if self._should_rebalance(date, prev_rebalance_date):
+                # Rebalance: compute new target weights
+                current_weights = self._calculate_weights(
+                    aligned_signals.loc[date], weight_scheme
+                )
+                prev_rebalance_date = date
+
+            # Append current weights (maintain between rebalances)
+            weights_list.append(current_weights)
+
+        weights = pd.DataFrame(
+            weights_list, index=returns_df.index, columns=self.prices.columns
+        ).fillna(0.0)
 
         # Previous day weights for PnL calculation
         weights_prev = weights.shift(1).fillna(0.0)
@@ -104,11 +118,42 @@ class VectorizedBacktest:
 
         return self._generate_results()
 
-    def _should_rebalance(self, date: pd.Timestamp) -> bool:
-        """Check if we should rebalance on given date."""
-        # Simple daily rebalancing for now
-        # Could be extended for weekly/monthly rebalancing
-        return True
+    def _should_rebalance(
+        self, date: pd.Timestamp, prev_rebalance_date: Optional[pd.Timestamp] = None
+    ) -> bool:
+        """Check if we should rebalance on given date.
+
+        Args:
+            date: Current date to check
+            prev_rebalance_date: Last rebalance date (None for first rebalance)
+
+        Returns:
+            True if should rebalance, False otherwise
+        """
+        # Always rebalance on first date
+        if prev_rebalance_date is None:
+            return True
+
+        if self.rebalance_freq == "D":
+            # Daily rebalancing
+            return True
+        elif self.rebalance_freq == "W":
+            # Weekly rebalancing - rebalance if week changed
+            return (
+                date.isocalendar()[1] != prev_rebalance_date.isocalendar()[1]
+                or date.year != prev_rebalance_date.year
+            )
+        elif self.rebalance_freq == "M":
+            # Monthly rebalancing - rebalance if month changed
+            return (
+                date.month != prev_rebalance_date.month
+                or date.year != prev_rebalance_date.year
+            )
+        else:
+            raise ValueError(
+                f"Unsupported rebalance frequency: {self.rebalance_freq}. "
+                f"Supported frequencies: 'D' (daily), 'W' (weekly), 'M' (monthly)"
+            )
 
     def _calculate_weights(self, signals: pd.Series, scheme: str) -> pd.Series:
         """Convert signals to portfolio weights."""

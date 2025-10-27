@@ -4,4 +4,7 @@ node_modules
 __pycache__/
 *.py[cod]
 *$py.class
+<<<<<<< HEAD
 src/quant_research_starter.egg-info/PKG-INFO
+=======
+>>>>>>> c8c55966502a7633c73ef7af4d794b072c7f94df
