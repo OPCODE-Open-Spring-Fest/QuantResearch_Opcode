@@ -94,8 +94,11 @@ python -m quant_research_starter.cli compute-factors -d data_sample/sample_price
 # run a backtest
 python -m quant_research_starter.cli backtest -d data_sample/sample_prices.csv -s output/factors.csv -o output/backtest_results.json
 
-# optional: start the Streamlit dashboard
+# DISCLAIMER: OLD VERSION
+# optional: start the Streamlit dashboard, if on main stream
 streamlit run src/quant_research_starter/dashboard/streamlit_app.py
+# NEW VERSION: if streamlit is in legacy folder
+streamlit run legacy/streamlit/streamlit_app.py
 ```
 
 ---
