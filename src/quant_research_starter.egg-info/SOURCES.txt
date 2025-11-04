@@ -18,6 +18,7 @@ src/quant_research_starter/data/downloaders.py
 src/quant_research_starter/data/init.py
 src/quant_research_starter/data/sample_loader.py
 src/quant_research_starter/data/synthetic.py
+src/quant_research_starter/data/validator.py
 src/quant_research_starter/examples/benchmark/benchmark_factors.py
 src/quant_research_starter/factors/__init__.py
 src/quant_research_starter/factors/base.py
@@ -28,9 +29,12 @@ src/quant_research_starter/factors/size.py
 src/quant_research_starter/factors/value.py
 src/quant_research_starter/factors/volatility.py
 src/quant_research_starter/metrics/__init__.py
+src/quant_research_starter/metrics/plotting.py
 src/quant_research_starter/metrics/risk.py
 src/quant_research_starter/universe/selection.py
 tests/test_backtest.py
 tests/test_data.py
 tests/test_factors.py
 tests/test_metrics.py
+tests/test_plotting.py
+tests/test_validator.py
