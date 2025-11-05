@@ -10,7 +10,6 @@ src/quant_research_starter.egg-info/dependency_links.txt
 src/quant_research_starter.egg-info/entry_points.txt
 src/quant_research_starter.egg-info/requires.txt
 src/quant_research_starter.egg-info/top_level.txt
-src/quant_research_starter/backtest/__init__.py
 src/quant_research_starter/backtest/vectorized.py
 src/quant_research_starter/dashboard/streamlit_app.py
 src/quant_research_starter/data/__init__.py
@@ -36,5 +35,6 @@ tests/test_backtest.py
 tests/test_data.py
 tests/test_factors.py
 tests/test_metrics.py
+tests/test_plotting.py
 tests/test_plotting.py
 tests/test_validator.py
