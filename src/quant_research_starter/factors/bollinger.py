@@ -1,4 +1,5 @@
 import pandas as pd
+from tqdm import tqdm
 
 from .base import Factor
 
@@ -18,15 +19,25 @@ class BollingerBandsFactor(Factor):
     def compute(self, prices: pd.DataFrame) -> pd.DataFrame:
         # Validate data
         self._validate_data(prices)
+        n_symbols = len(prices.columns)
+        with tqdm(total=4, desc=f"Computing {self.name} ({n_symbols} symbols)") as pbar:
+            # Rolling statistics
+            pbar.set_description("Calculating rolling mean")
+            rolling_mean = prices.rolling(self.lookback).mean()
+            pbar.update(1)
 
-        # Rolling statistics
-        rolling_mean = prices.rolling(self.lookback).mean()
-        rolling_std = prices.rolling(self.lookback).std()
+            pbar.set_description("Calculating rolling standard deviation")
+            rolling_std = prices.rolling(self.lookback).std()
+            pbar.update(1)
 
-        # Bollinger z-score
-        zscore = (prices - rolling_mean) / rolling_std
+            # Bollinger z-score
+            pbar.set_description("Computing z-scores")
+            zscore = (prices - rolling_mean) / rolling_std
+            pbar.update(1)
 
-        # Save results
-        self._values = zscore
+            # Save results
+            pbar.set_description("Finalizing factor values")
+            self._values = zscore
+            pbar.update(1)
 
         return zscore

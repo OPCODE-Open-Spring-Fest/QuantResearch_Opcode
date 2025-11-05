@@ -1,6 +1,7 @@
 """Momentum factor implementations."""
 
 import pandas as pd
+from tqdm import tqdm
 
 from .base import Factor
 
@@ -32,13 +33,22 @@ class MomentumFactor(Factor):
         if len(prices) < total_lookback:
             raise ValueError(f"Need at least {total_lookback} periods of data")
 
-        # Calculate momentum
-        shifted_prices = prices.shift(self.skip_period)
-        momentum = (shifted_prices / shifted_prices.shift(self.lookback)) - 1
+        n_symbols = len(prices.columns)
+        n_days = len(prices)
+        with tqdm(total=3, desc=f"Momentum({self.lookback}d): {n_symbols} symbols") as pbar:
+            pbar.set_description("Shifting prices")
+            shifted_prices = prices.shift(self.skip_period)
+            pbar.update(1)
 
-        # Keep alignment: back-fill so the earliest valid window propagates forward
-        # This matches unit tests expecting the last value to reflect the first valid window
-        momentum = momentum.bfill()
+            pbar.set_description("Calculating momentum returns")
+            momentum = (shifted_prices / shifted_prices.shift(self.lookback)) - 1
+            pbar.update(1)
+
+            pbar.set_description("Forward-filling missing values")
+            # Keep alignment: back-fill so the earliest valid window propagates forward
+            # This matches unit tests expecting the last value to reflect the first valid window
+            momentum = momentum.bfill()
+            pbar.update(1)
 
         self._values = momentum
         return momentum
@@ -55,9 +65,22 @@ class CrossSectionalMomentum(MomentumFactor):
         """Compute cross-sectional momentum z-scores."""
         raw_momentum = super().compute(prices)
 
-        # Z-score normalization cross-sectionally
-        z_scores = raw_momentum.sub(raw_momentum.mean(axis=1), axis=0)
-        z_scores = z_scores.div(raw_momentum.std(axis=1), axis=0)
+        n_days = len(raw_momentum)
+        
+        # Z-score normalization cross-sectionally with progress
+        with tqdm(total=3, desc="Cross-sectional normalization") as pbar:
+            pbar.set_description("Calculating daily means")
+            daily_means = raw_momentum.mean(axis=1)
+            pbar.update(1)
+
+            pbar.set_description("Calculating daily standard deviations")
+            daily_stds = raw_momentum.std(axis=1)
+            pbar.update(1)
+
+            pbar.set_description("Computing z-scores")
+            z_scores = raw_momentum.sub(daily_means, axis=0)
+            z_scores = z_scores.div(daily_stds, axis=0)
+            pbar.update(1)
 
         self._values = z_scores
         return z_scores

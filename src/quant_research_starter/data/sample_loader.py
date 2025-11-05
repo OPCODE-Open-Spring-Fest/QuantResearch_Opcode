@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 
 class SampleDataLoader:
@@ -29,12 +30,14 @@ class SampleDataLoader:
 
         np.random.seed(42)
         data = {}
-
-        for symbol in symbols:
-            # Generate realistic-looking price series with trends
-            returns = np.random.normal(0.0005, 0.02, len(dates))
-            prices = 100 * np.cumprod(1 + returns)
-            data[symbol] = prices
+        with tqdm(total=len(symbols), desc="Generating sample data", unit="symbol") as pbar:
+            for symbol in symbols:
+                # Generate realistic-looking price series with trends
+                returns = np.random.normal(0.0005, 0.02, len(dates))
+                prices = 100 * np.cumprod(1 + returns)
+                data[symbol] = prices
+                pbar.update(1)
+                pbar.set_postfix(symbol=symbol, refresh=False)
 
         df = pd.DataFrame(data, index=dates)
         df.index.name = "date"

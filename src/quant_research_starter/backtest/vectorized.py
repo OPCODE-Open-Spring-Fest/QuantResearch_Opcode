@@ -3,7 +3,7 @@
 from typing import Dict, Optional
 
 import pandas as pd
-
+from tqdm import tqdm
 
 class VectorizedBacktest:
     """
@@ -74,40 +74,54 @@ class VectorizedBacktest:
 
         # Compute daily weights from signals (rebalance only on rebalance dates)
         weights_list = []
-        for date in returns_df.index:
-            if self._should_rebalance(date, prev_rebalance_date):
-                # Rebalance: compute new target weights
-                current_weights = self._calculate_weights(
-                    aligned_signals.loc[date], weight_scheme
-                )
-                prev_rebalance_date = date
+        with tqdm(len(returns_df.index),desc="Backtesting", unit="day") as pbar:
+            for date in returns_df.index:
+                if self._should_rebalance(date, prev_rebalance_date):
+                    # Rebalance: compute new target weights
+                    current_weights = self._calculate_weights(
+                        aligned_signals.loc[date], weight_scheme
+                    )
+                    prev_rebalance_date = date
+                    pbar.set_postfix(rebalance="✓", refresh=False)
+                else :
+                    pbar.set_postfix(rebalance=" ", refresh=False)
 
-            # Append current weights (maintain between rebalances)
-            weights_list.append(current_weights)
+                # Append current weights (maintain between rebalances)
+                weights_list.append(current_weights)
+                pbar.update(1)
 
         weights = pd.DataFrame(
             weights_list, index=returns_df.index, columns=self.prices.columns
         ).fillna(0.0)
 
-        # Previous day weights for PnL calculation
-        weights_prev = weights.shift(1).fillna(0.0)
+        with tqdm(total=4, desc="Calculating performance") as pbar:
+            # Previous day weights for PnL calculation
+            pbar.set_description("Calculating weight shifts")
+            weights_prev = weights.shift(1).fillna(0.0)
+            pbar.update(1)
 
-        # Turnover for transaction costs (L1 change / 2)
-        turnover = (weights.fillna(0.0) - weights_prev).abs().sum(axis=1) * 0.5
-        tc_series = turnover * self.transaction_cost
+            # Turnover for transaction costs (L1 change / 2)
+            pbar.set_description("Calculating transaction costs")
+            turnover = (weights.fillna(0.0) - weights_prev).abs().sum(axis=1) * 0.5
+            tc_series = turnover * self.transaction_cost
+            pbar.update(1)
 
-        # Strategy returns
-        strat_ret = (weights_prev * returns_df).sum(axis=1) - tc_series
+            # Strategy returns
+            pbar.set_description("Calculating strategy returns")
+            strat_ret = (weights_prev * returns_df).sum(axis=1) - tc_series
+            pbar.update(1)
 
-        # Build portfolio value series
-        portfolio_value = (1 + strat_ret).cumprod() * self.initial_capital
-        portfolio_value = pd.concat(
-            [
-                pd.Series(self.initial_capital, index=[self.prices.index[0]]),
-                portfolio_value,
-            ]
-        )
-        portfolio_value = portfolio_value.reindex(self.prices.index).ffill()
+            # Build portfolio value series
+            pbar.set_description("Building portfolio series")
+            portfolio_value = (1 + strat_ret).cumprod() * self.initial_capital
+            portfolio_value = pd.concat(
+                [
+                    pd.Series(self.initial_capital, index=[self.prices.index[0]]),
+                    portfolio_value,
+                ]
+            )
+            portfolio_value = portfolio_value.reindex(self.prices.index).ffill()
+            pbar.update(1)
 
         # Store results
         self.positions = weights  # interpret as weights positions

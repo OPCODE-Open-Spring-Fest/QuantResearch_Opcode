@@ -7,6 +7,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
+from tqdm import tqdm
 
 load_dotenv()
 
@@ -41,12 +42,14 @@ class YahooDownloader(DataDownloader):
             # In real implementation, use yfinance or similar
             dates = pd.date_range(start=start_date, end=end_date, freq="D")
             data = {}
-
-            for symbol in symbols:
-                # Generate mock price data
-                np.random.seed(hash(symbol) % 2**32)
-                prices = 100 + np.cumsum(np.random.randn(len(dates)) * 0.5)
-                data[symbol] = prices
+            with tqdm(total=len(symbols),desc="Downloading Yahoo data", unit="symbol") as pbar:
+                for symbol in symbols:
+                    # Generate mock price data
+                    np.random.seed(hash(symbol) % 2**32)
+                    prices = 100 + np.cumsum(np.random.randn(len(dates)) * 0.5)
+                    data[symbol] = prices
+                    pbar.update(1)
+                    pbar.set_postfix(symbol=symbol, refresh=False)
 
             df = pd.DataFrame(data, index=dates)
             df.index.name = "date"
@@ -79,11 +82,13 @@ class AlphaVantageDownloader(DataDownloader):
             # Mock implementation - similar to Yahoo downloader
             dates = pd.date_range(start=start_date, end=end_date, freq="D")
             data = {}
-
-            for symbol in symbols:
-                np.random.seed(hash(symbol) % 2**32)
-                prices = 100 + np.cumsum(np.random.randn(len(dates)) * 0.3)
-                data[symbol] = prices
+            with tqdm(total=len(symbols), desc="Downloading Alpha Vantage data", unit="symbol") as pbar:
+                for symbol in symbols:
+                    np.random.seed(hash(symbol) % 2**32)
+                    prices = 100 + np.cumsum(np.random.randn(len(dates)) * 0.3)
+                    data[symbol] = prices
+                    pbar.update(1)
+                    pbar.set_postfix(symbol=symbol, refresh=False)
 
             df = pd.DataFrame(data, index=dates)
             df.index.name = "date"
