@@ -159,6 +159,7 @@ def backtest(data_file, signals_file, initial_capital, output, plot, plotly):
     # Load signals
     if Path(signals_file).exists():
         signals_data = pd.read_csv(signals_file, index_col=0, parse_dates=True)
+        # If a 'composite' signal column exists, use it; otherwise, fall back to the first available signal column.
         if "composite" in signals_data.columns:
             signals = signals_data["composite"]
         else:
