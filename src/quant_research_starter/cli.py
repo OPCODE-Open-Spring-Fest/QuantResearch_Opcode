@@ -178,28 +178,7 @@ def backtest(data_file, signals_file, initial_capital, output, plot, plotly):
         dict.fromkeys(prices.columns, signals), index=signals.index
     )
 
-    def run_with_progress(self, weight_scheme="rank"):
-        returns = []
-        idx = self.prices.index
-
-        for i in tqdm(range(1, len(idx)), desc="Running backtest"):
-            ret = self._compute_daily_return(
-                self.prices.iloc[i - 1],
-                self.prices.iloc[i],
-                weight_scheme,
-            )
-            returns.append(ret)
-
-        results = pd.DataFrame({"returns": returns}, index=idx[1:])
-        results["portfolio_value"] = (
-            self.initial_capital * (1 + results["returns"]).cumprod()
-        )
-        results["final_value"] = results["portfolio_value"].iloc[-1]
-        results["total_return"] = results["final_value"] / self.initial_capital - 1
-
-        return results
-
-    VectorizedBacktest.run = run_with_progress
+    # Use the original vectorized run() method for performance
 
     backtest = VectorizedBacktest(
         prices=prices,
