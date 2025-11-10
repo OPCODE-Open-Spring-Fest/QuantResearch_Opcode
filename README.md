@@ -125,7 +125,7 @@ The backtester supports different rebalancing frequencies to match your strategy
 
 ```python
 from quant_research_starter.backtest import VectorizedBacktest
-
+##
 # Daily rebalancing (default)
 bt_daily = VectorizedBacktest(prices, signals, rebalance_freq="D")
 
