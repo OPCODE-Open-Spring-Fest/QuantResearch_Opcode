@@ -100,13 +100,11 @@ def compute_factors(data_file, factors, output):
         vol = VolatilityFactor(lookback=21)
         factor_data["volatility"] = vol.compute(prices)
 
-    combined_signals = pd.DataFrame(
-        {
-            k: tqdm(v.mean(axis=1), desc=f"Averaging {k} factor")
-            for k, v in factor_data.items()
-        }
-    )
+    combined_signals_dict = {}
+    for k, v in tqdm(factor_data.items(), desc="Averaging factors"):
+        combined_signals_dict[k] = v.mean(axis=1)
 
+    combined_signals = pd.DataFrame(combined_signals_dict)
     combined_signals["composite"] = combined_signals.mean(axis=1)
 
     # Save results
