@@ -1,0 +1,257 @@
+/* Dashboard.module.css */
+
+.container {
+  padding: 2rem;
+}
+
+.title {
+  font-size: 1.875rem; /* 30px */
+  font-weight: bold;
+  color: #1f2937; /* gray-900 */
+}
+
+.subtitle {
+  color: #4b5563; /* gray-600 */
+  margin-top: 0.5rem;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .metricsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .metricsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.card {
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb; /* gray-200 */
+  padding: 1.5rem;
+}
+
+.metricCard {
+  composes: card;
+}
+
+.metricHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.metricIcon {
+  padding: 0.5rem;
+  background-color: #dbeafe; /* blue-50 */
+  border-radius: 0.5rem;
+}
+
+.metricChange {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.metricChangeUp {
+  composes: metricChange;
+  color: #059669; /* green-600 */
+}
+
+.metricChangeDown {
+  composes: metricChange;
+  color: #dc2626; /* red-600 */
+}
+
+.metricTitle {
+  color: #4b5563; /* gray-600 */
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.metricValue {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.metricValueUp {
+  composes: metricValue;
+  color: #059669; /* green-600 */
+}
+
+.metricValueDown {
+  composes: metricValue;
+  color: #dc2626; /* red-600 */
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .contentGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937; /* gray-900 */
+  margin-bottom: 1rem;
+}
+
+.activityItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background-color: #f9fafb; /* gray-50 */
+  border-radius: 0.5rem;
+}
+
+.activityName {
+  font-weight: 500;
+  color: #1f2937; /* gray-900 */
+}
+
+.activityDate {
+  font-size: 0.875rem;
+  color: #6b7280; /* gray-500 */
+}
+
+.status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusCompleted {
+  composes: status;
+  background-color: #d1fae5; /* green-100 */
+  color: #065f46; /* green-800 */
+}
+
+.statusRunning {
+  composes: status;
+  background-color: #dbeafe; /* blue-100 */
+  color: #1e40af; /* blue-800 */
+}
+
+.quickAction {
+  width: 100%;
+  text-align: left;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid;
+  transition: background-color 0.2s;
+}
+
+.quickActionBlue {
+  composes: quickAction;
+  background-color: #dbeafe; /* blue-50 */
+  border-color: #93c5fd; /* blue-200 */
+  color: #1e3a8a; /* blue-900 */
+}
+
+.quickActionBlue:hover {
+  background-color: #bfdbfe; /* blue-100 */
+}
+
+.quickActionGreen {
+  composes: quickAction;
+  background-color: #d1fae5; /* green-50 */
+  border-color: #a7f3d0; /* green-200 */
+  color: #064e3b; /* green-900 */
+}
+
+.quickActionGreen:hover {
+  background-color: #a7f3d0; /* green-100 */
+}
+
+.quickActionPurple {
+  composes: quickAction;
+  background-color: #e9d5ff; /* purple-50 */
+  border-color: #c4b5fd; /* purple-200 */
+  color: #4c1d95; /* purple-900 */
+}
+
+.quickActionPurple:hover {
+  background-color: #d8b4fe; /* purple-100 */
+}
+
+.actionTitle {
+  font-weight: 500;
+}
+
+.actionDescription {
+  font-size: 0.875rem;
+}
+
+/* New styles for additional content */
+
+.performanceChart {
+  composes: card;
+  grid-column: 1 / -1;
+}
+
+.positionsTable {
+  composes: card;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table th {
+  background-color: #f9fafb;
+  font-weight: 500;
+  color: #374151;
+}
+
+.newsSection {
+  composes: card;
+  grid-column: 1 / -1;
+}
+
+.newsItem {
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.newsItem:last-child {
+  border-bottom: none;
+}
+
+.newsTitle {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.newsDate {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
