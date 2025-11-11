@@ -1,3 +1,5 @@
+```
+
 frontend/
 │
 ├── core/                          # Shared logic library
@@ -48,3 +50,4 @@ frontend/
 ├── pnpm-workspace.yaml            # defines workspace packages
 ├── tsconfig.base.json             # shared TS config
 └── README.md
+```
