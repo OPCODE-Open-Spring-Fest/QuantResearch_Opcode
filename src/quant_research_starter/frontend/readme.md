@@ -1,5 +1,4 @@
 ```
-
 frontend/
 │
 ├── core/                          # Shared logic library
