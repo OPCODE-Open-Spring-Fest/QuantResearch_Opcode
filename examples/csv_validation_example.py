@@ -6,6 +6,7 @@ to validate user-provided CSV files before backtesting.
 """
 
 import pandas as pd
+
 from quant_research_starter.data import validate_input_csv, validate_price_csv
 
 
@@ -23,7 +24,7 @@ def example_validate_price_file():
 
     # Check results
     if result["valid"]:
-        print(f"✓ File is valid!")
+        print("✓ File is valid!")
         print(f"  Rows: {result['row_count']}")
         print(f"  Columns: {result['column_count']}")
     else:
@@ -55,7 +56,7 @@ def example_validate_with_required_columns():
     if is_valid:
         print(f"✓ All required symbols present: {', '.join(required_symbols)}")
     else:
-        print(f"✗ Validation failed:")
+        print("✗ Validation failed:")
         for err in errors:
             print(f"  {err}")
 
@@ -76,7 +77,7 @@ def example_error_handling():
         if not result["valid"]:
             # Handle errors
             error_messages = [err["message"] for err in result["errors"]]
-            raise ValueError(f"Invalid price file:\n" + "\n".join(error_messages))
+            raise ValueError("Invalid price file:\n" + "\n".join(error_messages))
 
         # If valid, proceed with loading
         prices = pd.read_csv(file_path, index_col=0, parse_dates=True)
@@ -102,7 +103,7 @@ def example_detailed_error_info():
 
     result = validate_input_csv("invalid_file.csv", csv_type="price")
 
-    print(f"Validation Summary:")
+    print("Validation Summary:")
     print(f"  Valid: {result['valid']}")
     print(f"  Errors: {len(result['errors'])}")
     print(f"  Warnings: {len(result['warnings'])}")
