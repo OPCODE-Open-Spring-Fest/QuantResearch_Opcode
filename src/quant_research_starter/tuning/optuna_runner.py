@@ -212,12 +212,21 @@ def create_backtest_objective(
             )
             results = backtest.run(weight_scheme="rank")
 
-            metrics_calc = RiskMetrics(results["returns"])
+            returns = results["returns"]
+            n_steps = 5  # Number of intermediate steps for reporting
+            step_size = max(1, len(returns) // n_steps)
+            for step in range(step_size, len(returns) + 1, step_size):
+                partial_returns = returns.iloc[:step]
+                metrics_calc = RiskMetrics(partial_returns)
+                metrics = metrics_calc.calculate_all()
+                metric_value = metrics.get(metric, 0.0)
+                trial.report(metric_value, step)
+                if trial.should_prune():
+                    raise optuna.TrialPruned()
+
+            # Final metric on all returns
+            metrics_calc = RiskMetrics(returns)
             metrics = metrics_calc.calculate_all()
-
-            if trial.should_prune():
-                raise optuna.TrialPruned()
-
             metric_value = metrics.get(metric, 0.0)
             return float(metric_value)
 
