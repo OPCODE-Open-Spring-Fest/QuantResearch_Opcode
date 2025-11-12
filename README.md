@@ -24,7 +24,8 @@ QuantResearchStarter aims to provide a clean, well-documented starting point for
 * **Factor library** — example implementations of momentum, value, size, and volatility factors.
 * **Vectorized backtesting engine** — supports transaction costs, slippage, portfolio constraints, and configurable rebalancing frequencies (daily, weekly, monthly).
 * **Risk & performance analytics** — returns, drawdowns, Sharpe, turnover, and other risk metrics.
-* **CLI & scripts** — small tools to generate data, compute factors, and run backtests from the terminal.
+* **Hyperparameter optimization** — automated tuning with Optuna, pruning, and distributed study support.
+* **CLI & scripts** — small tools to generate data, compute factors, run backtests, and optimize hyperparameters from the terminal.
 * **Production-ready utilities** — type hints, tests, continuous integration, and documentation scaffolding.
 
 ---
@@ -153,8 +154,41 @@ Run `python -m quant_research_starter.cli --help` or `python -m quant_research_s
 * `python -m quant_research_starter.cli generate-data` — create synthetic price series or download data from adapters
 * `python -m quant_research_starter.cli compute-factors` — calculate and export factor scores
 * `python -m quant_research_starter.cli backtest` — run the vectorized backtest and export results
+* `python -m quant_research_starter.cli autotune` — optimize hyperparameters with Optuna
 
 **Note:** If you have the `qrs` command in your PATH, you can use `qrs` instead of `python -m quant_research_starter.cli`.
+
+### Hyperparameter Tuning (Autotune)
+
+The `autotune` command automates hyperparameter search using Optuna with pruning support for efficient optimization.
+
+**Basic usage:**
+```bash
+# Optimize momentum factor hyperparameters
+qrs autotune -f momentum -n 100 -m sharpe_ratio
+
+# Use YAML configuration file
+qrs autotune -c examples/autotune_config.yaml
+```
+
+**Key features:**
+- **Pruning**: Early stopping of bad trials to save computation time
+- **Distributed tuning**: Optional RDB storage (SQLite, PostgreSQL, MySQL) for multi-worker setups
+- **Flexible objectives**: Optimize any metric (Sharpe ratio, total return, CAGR, etc.)
+- **Factor support**: Optimize momentum, volatility, and other factor hyperparameters
+
+**Example YAML configuration:**
+```yaml
+data_file: "data_sample/sample_prices.csv"
+factor_type: "momentum"
+n_trials: 100
+metric: "sharpe_ratio"
+output: "output/tuning_results.json"
+pruner: "median"  # Options: none, median, percentile
+storage: "sqlite:///optuna.db"  # Optional: for distributed runs
+```
+
+See `examples/autotune_config.yaml` for a complete example configuration.
 
 ---
 
@@ -167,6 +201,7 @@ QuantResearchStarter/
 │  ├─ factors/           # factor implementations
 │  ├─ backtest/          # backtester & portfolio logic
 │  ├─ analytics/         # performance and risk metrics
+│  ├─ tuning/            # Optuna hyperparameter optimization
 │  ├─ cli/               # command line entry points
 │  └─ dashboard/         # optional Streamlit dashboard
 ├─ examples/             # runnable notebooks & example strategies

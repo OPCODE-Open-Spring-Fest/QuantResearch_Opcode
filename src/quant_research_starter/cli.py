@@ -6,12 +6,14 @@ from pathlib import Path
 import click
 import matplotlib.pyplot as plt
 import pandas as pd
+import yaml
 from tqdm import tqdm
 
 from .backtest import VectorizedBacktest
 from .data import SampleDataLoader, SyntheticDataGenerator
 from .factors import MomentumFactor, SizeFactor, ValueFactor, VolatilityFactor
 from .metrics import RiskMetrics, create_equity_curve_plot
+from .tuning import OptunaRunner, create_backtest_objective
 
 
 @click.group()
@@ -244,6 +246,137 @@ def backtest(data_file, signals_file, initial_capital, output, plot, plotly):
     click.echo(f"Final portfolio value: ${results['final_value']:,.2f}")
     click.echo(f"Total return: {results['total_return']:.2%}")
     click.echo(f"Sharpe ratio: {metrics['sharpe_ratio']:.2f}")
+    click.echo(f"Results saved -> {output}")
+
+
+@cli.command()
+@click.option(
+    "--config",
+    "-c",
+    type=click.Path(exists=True),
+    help="YAML configuration file for hyperparameter tuning",
+)
+@click.option(
+    "--data-file",
+    "-d",
+    default="data_sample/sample_prices.csv",
+    help="Price data file path",
+)
+@click.option(
+    "--factor-type",
+    "-f",
+    type=click.Choice(["momentum", "value", "size", "volatility"]),
+    default="momentum",
+    help="Factor type to optimize",
+)
+@click.option(
+    "--n-trials",
+    "-n",
+    default=100,
+    help="Number of optimization trials",
+)
+@click.option(
+    "--metric",
+    "-m",
+    default="sharpe_ratio",
+    help="Metric to optimize (sharpe_ratio, total_return, cagr, etc.)",
+)
+@click.option(
+    "--output",
+    "-o",
+    default="output/tuning_results.json",
+    help="Output file for tuning results",
+)
+@click.option(
+    "--storage",
+    "-s",
+    default=None,
+    help="RDB storage URL (e.g., sqlite:///optuna.db) for distributed tuning",
+)
+@click.option(
+    "--pruner",
+    "-p",
+    type=click.Choice(["none", "median", "percentile"]),
+    default="median",
+    help="Pruning strategy for early stopping",
+)
+@click.option(
+    "--study-name",
+    default="optuna_study",
+    help="Name of the Optuna study",
+)
+def autotune(
+    config,
+    data_file,
+    factor_type,
+    n_trials,
+    metric,
+    output,
+    storage,
+    pruner,
+    study_name,
+):
+    """Run hyperparameter optimization with Optuna."""
+    click.echo("Starting hyperparameter optimization...")
+
+    # Load configuration from YAML if provided
+    if config:
+        with open(config, "r") as f:
+            config_data = yaml.safe_load(f)
+            data_file = config_data.get("data_file", data_file)
+            factor_type = config_data.get("factor_type", factor_type)
+            n_trials = config_data.get("n_trials", n_trials)
+            metric = config_data.get("metric", metric)
+            output = config_data.get("output", output)
+            storage = config_data.get("storage", storage)
+            pruner = config_data.get("pruner", pruner)
+            study_name = config_data.get("study_name", study_name)
+
+    # Load data
+    if Path(data_file).exists():
+        prices = pd.read_csv(data_file, index_col=0, parse_dates=True)
+    else:
+        click.echo("Data file not found, using sample data...")
+        loader = SampleDataLoader()
+        prices = loader.load_sample_prices()
+
+    click.echo(f"Optimizing {factor_type} factor with {n_trials} trials...")
+    click.echo(f"Optimizing metric: {metric}")
+
+    # Create objective function
+    objective = create_backtest_objective(
+        prices=prices,
+        factor_type=factor_type,
+        metric=metric,
+    )
+
+    # Create and run Optuna runner
+    runner = OptunaRunner(
+        search_space={},  # Not used when using create_backtest_objective
+        objective=objective,
+        n_trials=n_trials,
+        study_name=study_name,
+        storage=storage,
+        pruner=pruner,
+        direction=(
+            "maximize"
+            if metric in ["sharpe_ratio", "total_return", "cagr"]
+            else "minimize"
+        ),
+    )
+
+    # Run optimization
+    results = runner.optimize()
+
+    # Save results
+    runner.save_results(output)
+
+    click.echo("\n" + "=" * 60)
+    click.echo("Optimization Results")
+    click.echo("=" * 60)
+    click.echo(f"Best parameters: {results['best_params']}")
+    click.echo(f"Best {metric}: {results['best_value']:.4f}")
+    click.echo(f"Total trials: {len(results['trial_history'])}")
     click.echo(f"Results saved -> {output}")
 
 
