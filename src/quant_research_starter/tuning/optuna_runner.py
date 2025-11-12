@@ -189,7 +189,8 @@ def create_backtest_objective(
 
         signal_series = signals.mean(axis=1)
         signal_matrix = pd.DataFrame(
-            {col: signal_series.copy() for col in prices.columns}, index=signal_series.index
+            {col: signal_series.copy() for col in prices.columns},
+            index=signal_series.index,
         )
 
         common_dates = prices.index.intersection(signal_matrix.index)
