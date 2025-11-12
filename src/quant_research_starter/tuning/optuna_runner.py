@@ -26,7 +26,7 @@ class OptunaRunner:
         direction: str = "maximize",
         random_state: Optional[int] = None,
     ):
-        
+
         self.search_space = search_space
         self.objective = objective
         self.n_trials = n_trials
