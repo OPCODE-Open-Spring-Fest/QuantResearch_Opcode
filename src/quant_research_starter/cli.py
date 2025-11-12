@@ -352,7 +352,6 @@ def autotune(
 
     # Create and run Optuna runner
     runner = OptunaRunner(
-        search_space={},  # Not used when using create_backtest_objective
         objective=objective,
         n_trials=n_trials,
         study_name=study_name,
