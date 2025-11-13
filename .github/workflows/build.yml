@@ -20,10 +20,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 'node'
-
-      - name: Change Branch
-        run: |
-          git checkout -B production
       
       - name: Cleanup
         run: |
@@ -38,12 +34,15 @@ jobs:
           npm install
           npm run build
       
+      
       - name: Prepare Deploy Branch
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.com"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add .
+          git checkout -B production
+          
+          git add src
 
           if git diff --cached --quiet; then
             echo "No changes to deploy."
