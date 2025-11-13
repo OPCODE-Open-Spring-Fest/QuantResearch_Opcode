@@ -15,13 +15,13 @@ def run_command(cmd):
     print(f"Running: {cmd}")
     print('='*60)
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    
+
     if result.stdout:
         print(result.stdout)
     if result.stderr and result.returncode != 0:
         print(f"ERROR: {result.stderr}")
         return False
-    
+
     return result.returncode == 0
 
 
@@ -29,21 +29,21 @@ def main():
     """Run all CLI tests"""
     print("\n🧪 Testing QuantResearch CLI")
     print("="*60)
-    
+
     # Define test directories
     test_data_dir = Path("test_data")
     test_output_dir = Path("test_output")
-    
+
     # Create test directories
     test_data_dir.mkdir(exist_ok=True)
     test_output_dir.mkdir(exist_ok=True)
-    
+
     # Test 1: Show help
     success = run_command("python -m quant_research_starter.cli --help")
     if not success:
         print("\n❌ Test 1 FAILED: Help command")
         sys.exit(1)
-    
+
     # Test 2: Generate data
     success = run_command(
         "python -m quant_research_starter.cli generate-data "
@@ -52,7 +52,7 @@ def main():
     if not success:
         print("\n❌ Test 2 FAILED: Generate data")
         sys.exit(1)
-    
+
     # Test 3: Compute factors
     success = run_command(
         "python -m quant_research_starter.cli compute-factors "
@@ -61,7 +61,7 @@ def main():
     if not success:
         print("\n❌ Test 3 FAILED: Compute factors")
         sys.exit(1)
-    
+
     # Test 4: Run backtest
     success = run_command(
         "python -m quant_research_starter.cli backtest "
@@ -71,7 +71,7 @@ def main():
     if not success:
         print("\n❌ Test 4 FAILED: Run backtest")
         sys.exit(1)
-    
+
     # Verify output files exist
     print("\n📁 Checking output files...")
     files_to_check = [
@@ -80,7 +80,7 @@ def main():
         test_output_dir / "backtest_results.json",
         test_output_dir / "backtest_plot.png"
     ]
-    
+
     all_exist = True
     for file_path in files_to_check:
         if file_path.exists():
@@ -88,16 +88,16 @@ def main():
         else:
             print(f"❌ {file_path} missing!")
             all_exist = False
-    
+
     if not all_exist:
         print("\n❌ Some output files are missing")
         sys.exit(1)
-    
+
     # Summary
     print("\n" + "="*60)
     print("✅ ALL TESTS PASSED!")
     print("="*60)
-    print(f"\n📂 Test files created in:")
+    print("\n📂 Test files created in:")
     print(f"   - {test_data_dir}/")
     print(f"   - {test_output_dir}/")
     print("\n💡 You can view the results and plots in the test_output directory.")
