@@ -4,6 +4,7 @@ from typing import Dict, Optional
 
 import pandas as pd
 
+
 class VectorizedBacktest:
     """
     Vectorized backtester for quantitative strategies.
