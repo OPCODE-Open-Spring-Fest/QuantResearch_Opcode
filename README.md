@@ -1,8 +1,8 @@
-# QuantResearch_Opcode
+# QuantResearch
 
 check out the [link](https://qrsopcode.netlify.app/)
 
-> **QuantResearch_Opcode** — research-grade quantitative strategy starter kit with an interactive React/TypeScript frontend (cauweb), Python backtesting core, and legacy Streamlit dashboards archived under `legacy/streamlit/`.
+> **QuantResearch** — research-grade quantitative strategy starter kit with an interactive React/TypeScript frontend (cauweb), Python backtesting core, and legacy Streamlit dashboards archived under `legacy/streamlit/`.
 
 ---
 
