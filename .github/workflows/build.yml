@@ -1,0 +1,59 @@
+name: Build Frontend 
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  populate-folder:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Setup Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'node'
+      
+      - name: Cleanup
+        run: |
+          rm -rf ./node-modules
+          rm -rf package.json
+          rm -rf package-lock.json
+
+      - name: Install Dependencies and Build
+        working-directory: src/quant_research_starter/frontend/cauweb
+        run: |
+          rm -rf dist
+          npm install
+          npm run build
+      
+      
+      - name: Prepare Deploy Branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -B production
+
+          git add src
+
+          if git diff --cached --quiet; then
+            echo "No changes to deploy."
+          else
+            git commit -m "deploy: update dist [skip ci]"
+            git push origin production --force
+            echo "🚀 Production updated!"
+          fi
+          
+          
+        
