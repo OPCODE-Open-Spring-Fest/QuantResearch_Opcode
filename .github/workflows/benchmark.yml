@@ -1,0 +1,42 @@
+name: Performance Benchmarks
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/quant_research_starter/backtest/**'
+      - 'src/quant_research_starter/benchmarks/**'
+      - '.github/workflows/benchmark.yml'
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy pandas numba
+          pip install -e .
+      
+      - name: Run benchmarks
+        run: |
+          cd src/quant_research_starter/benchmarks
+          python bench_opt.py > benchmark_results.txt 2>&1 || true
+      
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: benchmark-results
+          path: src/quant_research_starter/benchmarks/benchmark_results.txt
+          retention-days: 30
+
