@@ -17,7 +17,6 @@ class OptunaRunner:
 
     def __init__(
         self,
-        search_space: Dict[str, Any],
         objective: Callable[[Trial], float],
         n_trials: int = 100,
         study_name: Optional[str] = None,
@@ -25,6 +24,7 @@ class OptunaRunner:
         pruner: Optional[Union[str, optuna.pruners.BasePruner]] = None,
         direction: str = "maximize",
         random_state: Optional[int] = None,
+        search_space: Optional[Dict[str, Any]] = None,
     ):
 
         self.search_space = search_space
@@ -139,6 +139,7 @@ def create_backtest_objective(
     initial_capital: float = 1_000_000,
     transaction_cost: float = 0.001,
     metric: str = "sharpe_ratio",
+    search_space: Optional[Dict[str, Any]] = None,
 ) -> Callable[[Trial], float]:
     """
     Create an objective function for backtest-based hyperparameter tuning.
@@ -149,6 +150,8 @@ def create_backtest_objective(
         initial_capital: Initial capital for backtest.
         transaction_cost: Transaction cost rate.
         metric: Metric to optimize ("sharpe_ratio", "total_return", "cagr", etc.).
+        search_space: Optional search space dictionary. If provided, will be used
+            instead of default hardcoded parameter ranges.
 
     Returns:
         Objective function that takes a Trial and returns a float.
@@ -170,15 +173,22 @@ def create_backtest_objective(
 
     def objective(trial: Trial) -> float:
         """Objective function for Optuna trial."""
-        if factor_type == "momentum":
-            lookback = trial.suggest_int("lookback", 10, 252, step=1)
-            skip_period = trial.suggest_int("skip_period", 0, 5, step=1)
-            factor = FactorClass(lookback=lookback, skip_period=skip_period)
-        elif factor_type == "volatility":
-            lookback = trial.suggest_int("lookback", 10, 126, step=1)
-            factor = FactorClass(lookback=lookback)
+        # Use search_space if provided, otherwise use default hardcoded ranges
+        if search_space:
+            params = suggest_hyperparameters(trial, search_space)
+            # Create factor with suggested parameters
+            factor = FactorClass(**params)
         else:
-            factor = FactorClass()
+            # Default behavior: use hardcoded parameter ranges
+            if factor_type == "momentum":
+                lookback = trial.suggest_int("lookback", 10, 252, step=1)
+                skip_period = trial.suggest_int("skip_period", 0, 5, step=1)
+                factor = FactorClass(lookback=lookback, skip_period=skip_period)
+            elif factor_type == "volatility":
+                lookback = trial.suggest_int("lookback", 10, 126, step=1)
+                factor = FactorClass(lookback=lookback)
+            else:
+                factor = FactorClass()
         signals = factor.compute(prices)
         if signals.empty:
             return (

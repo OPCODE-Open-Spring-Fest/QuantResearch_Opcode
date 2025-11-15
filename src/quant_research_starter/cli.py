@@ -320,6 +320,7 @@ def autotune(
     click.echo("Starting hyperparameter optimization...")
 
     # Load configuration from YAML if provided
+    search_space = None
     if config:
         with open(config, "r") as f:
             config_data = yaml.safe_load(f)
@@ -331,6 +332,7 @@ def autotune(
             storage = config_data.get("storage", storage)
             pruner = config_data.get("pruner", pruner)
             study_name = config_data.get("study_name", study_name)
+            search_space = config_data.get("search_space", None)
 
     # Load data
     if Path(data_file).exists():
@@ -348,6 +350,7 @@ def autotune(
         prices=prices,
         factor_type=factor_type,
         metric=metric,
+        search_space=search_space,
     )
 
     # Create and run Optuna runner
