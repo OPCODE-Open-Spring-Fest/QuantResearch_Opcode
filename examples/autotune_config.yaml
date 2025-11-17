@@ -1,0 +1,27 @@
+# Example configuration for hyperparameter tuning with Optuna
+# Usage: qrs autotune -c examples/autotune_config.yaml
+
+# Data configuration
+data_file: "data_sample/sample_prices.csv"
+
+# Factor to optimize
+factor_type: "momentum"  # Options: momentum, value, size, volatility
+
+# Optimization settings
+n_trials: 100  # Number of trials to run
+metric: "sharpe_ratio"  # Metric to optimize (sharpe_ratio, total_return, cagr, etc.)
+
+# Output configuration
+output: "output/tuning_results.json"
+study_name: "momentum_factor_study"
+
+# Pruning configuration (for early stopping of bad trials)
+# Options: none, median, percentile
+pruner: "median"
+
+# Optional: RDB storage for distributed tuning runs
+# Uncomment and configure for multi-worker setups
+# storage: "sqlite:///optuna.db"
+# For PostgreSQL: "postgresql://user:password@localhost/dbname"
+# For MySQL: "mysql://user:password@localhost/dbname"
+

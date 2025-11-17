@@ -218,7 +218,7 @@ The frontend expects a stable WS message contract. A suggested minimal schema (e
 
 --- -->
 
-## Testing & CI
+## Testing & CI: to be updated
 
 <!-- ### Python unit tests
 
