@@ -5,7 +5,7 @@ from quant_research_starter.metrics.plotting import create_equity_curve_plot
 
 def test_plotly_html_creation():
     # Create test data matching the backtest results structure
-    dates = [f"2020-01-{i+1:02d}" for i in range(20)]
+    dates = [f"2020-01-{i + 1:02d}" for i in range(20)]
     portfolio_values = [1000000 + i * 5000 for i in range(20)]
 
     # Test HTML creation
@@ -32,7 +32,7 @@ def test_plotly_html_creation():
 
 def test_plotly_fallback_to_matplotlib():
     """Test that PNG is created even if Plotly is not available."""
-    dates = [f"2020-01-{i+1:02d}" for i in range(15)]
+    dates = [f"2020-01-{i + 1:02d}" for i in range(15)]
     portfolio_values = [1000000 + i * 3000 for i in range(15)]
 
     # Test PNG creation

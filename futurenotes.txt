@@ -1,0 +1,2 @@
+Background tasks via FastAPI BackgroundTasks for synchronous demo; 
+later swap to Celery/RQ for heavy workloads.

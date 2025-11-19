@@ -69,9 +69,9 @@ class TestMomentumFactor:
         lb = getattr(momentum, "lookback", 5)
 
         # Ensure there is enough data for the expected calculation
-        assert len(prices) > (
-            skip + lb
-        ), "test setup doesn't have enough data for momentum calculation"
+        assert len(prices) > (skip + lb), (
+            "test setup doesn't have enough data for momentum calculation"
+        )
 
         expected_momentum = (
             prices.shift(skip).iloc[-1, 0] / prices.shift(skip + lb).iloc[-1, 0]
@@ -79,9 +79,9 @@ class TestMomentumFactor:
         actual = result.iloc[-1, 0]
 
         assert np.isfinite(actual), f"momentum result is not finite: {actual}"
-        assert np.isclose(
-            actual, expected_momentum, atol=1e-6
-        ), f"momentum mismatch: got {actual}, expected {expected_momentum}"
+        assert np.isclose(actual, expected_momentum, atol=1e-6), (
+            f"momentum mismatch: got {actual}, expected {expected_momentum}"
+        )
 
 
 class TestValueFactor:
@@ -168,9 +168,9 @@ class TestVolatilityFactor:
 
         # Allow NaNs during rolling warm-up; only validate values after the lookback window is available.
         post_warmup = result.iloc[lookback:].values.flatten()
-        assert np.all(
-            np.isfinite(post_warmup)
-        ), "volatility results contain non-finite values after warm-up"
+        assert np.all(np.isfinite(post_warmup)), (
+            "volatility results contain non-finite values after warm-up"
+        )
 
         # Compute realized rolling volatility (std of pct-change) over the lookback window for each series
         realized = (
@@ -179,23 +179,23 @@ class TestVolatilityFactor:
         factor_last = result.iloc[-1]  # Series: index=columns
 
         # Sanity: realized vol should be finite and non-equal
-        assert np.all(
-            np.isfinite(realized)
-        ), "realized volatility contains non-finite values"
-        assert not np.allclose(
-            realized.values, realized.values[0]
-        ), "realized vols are identical; test input invalid"
+        assert np.all(np.isfinite(realized)), (
+            "realized volatility contains non-finite values"
+        )
+        assert not np.allclose(realized.values, realized.values[0]), (
+            "realized vols are identical; test input invalid"
+        )
 
         # Use Spearman rank correlation to check monotonic relation between factor and realized vol.
         # We expect a negative correlation: higher factor -> lower realized vol (i.e., factor encodes low-vol signal).
         spearman_corr = factor_last.corr(realized, method="spearman")
 
-        assert np.isfinite(
-            spearman_corr
-        ), f"spearman corr is not finite: {spearman_corr}"
-        assert (
-            spearman_corr < -0.5
-        ), f"volatility factor should be negatively correlated with realized volatility (spearman={spearman_corr})"
+        assert np.isfinite(spearman_corr), (
+            f"spearman corr is not finite: {spearman_corr}"
+        )
+        assert spearman_corr < -0.5, (
+            f"volatility factor should be negatively correlated with realized volatility (spearman={spearman_corr})"
+        )
 
 
 class TestBollingerBandsFactor:

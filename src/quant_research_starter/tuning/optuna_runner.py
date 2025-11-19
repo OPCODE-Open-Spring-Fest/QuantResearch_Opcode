@@ -14,7 +14,6 @@ from ..metrics import RiskMetrics
 
 
 class OptunaRunner:
-
     def __init__(
         self,
         objective: Callable[[Trial], float],
@@ -26,7 +25,6 @@ class OptunaRunner:
         random_state: Optional[int] = None,
         search_space: Optional[Dict[str, Any]] = None,
     ):
-
         self.search_space = search_space
         self.objective = objective
         self.n_trials = n_trials

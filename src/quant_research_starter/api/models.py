@@ -1,7 +1,10 @@
 """SQLAlchemy models for users and backtest jobs."""
+
 from __future__ import annotations
+
 import sqlalchemy as sa
 from sqlalchemy import func
+
 from .db import Base
 
 
