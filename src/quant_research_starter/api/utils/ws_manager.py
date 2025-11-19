@@ -3,13 +3,14 @@
 This module provides a simple in-memory WebSocket manager and a Redis-backed
 pub/sub helper for broadcasting messages from Celery workers to connected clients.
 """
-from typing import Dict, Set
+
 import asyncio
 import json
 import os
+from typing import Dict, Set
 
-from fastapi import WebSocket
 import aioredis
+from fastapi import WebSocket
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 

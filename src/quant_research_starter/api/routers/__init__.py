@@ -1,9 +1,7 @@
 """API routers package."""
 
-from fastapi import APIRouter
+from . import assets as assets_router
+from . import auth as auth_router
+from . import backtest as backtest_router
 
-router = APIRouter()
-
-from . import auth as auth_router  # noqa: E402,F401
-from . import backtest as backtest_router  # noqa: E402,F401
-from . import assets as assets_router  # noqa: E402,F401
+__all__ = ["auth_router", "backtest_router", "assets_router"]
