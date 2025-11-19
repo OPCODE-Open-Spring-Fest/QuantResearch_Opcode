@@ -1,5 +1,7 @@
 """Assets router to expose available symbols / sample data."""
+
 from fastapi import APIRouter
+
 from quant_research_starter.data.sample_loader import SampleDataLoader
 
 router = APIRouter(prefix="/api/assets", tags=["assets"])

@@ -1,10 +1,13 @@
 """FastAPI application entrypoint for backend API."""
-from fastapi import FastAPI, APIRouter
-from fastapi.middleware.cors import CORSMiddleware
-import os
-import asyncio
 
-from .routers import auth as auth_router, backtest as backtest_router
+import asyncio
+import os
+
+from fastapi import APIRouter, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from .routers import auth as auth_router
+from .routers import backtest as backtest_router
 from .utils.ws_manager import redis_listener_loop
 
 app = FastAPI(title="QuantResearch API")

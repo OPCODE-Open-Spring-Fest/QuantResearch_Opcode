@@ -119,7 +119,9 @@ class TestVectorizedBacktest:
 
         # Backtest with costs
         backtest_with_cost = VectorizedBacktest(
-            prices, signals, transaction_cost=0.01  # 1% cost
+            prices,
+            signals,
+            transaction_cost=0.01,  # 1% cost
         )
         results_with_cost = backtest_with_cost.run()
 

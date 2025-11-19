@@ -1,20 +1,19 @@
 """Celery tasks for running backtests and emitting progress via Redis pub/sub."""
+
 from __future__ import annotations
-import os
+
 import json
-import time
+import os
+
 from celery.utils.log import get_task_logger
 from redis import Redis
-
-from .celery_app import celery_app
 
 from quant_research_starter.backtest.vectorized import VectorizedBacktest
 from quant_research_starter.data.sample_loader import SampleDataLoader
 from quant_research_starter.metrics.risk import RiskMetrics
 
 from ..tasks.sync_db import update_job_status
-from .. import models
-from ..db import DATABASE_URL
+from .celery_app import celery_app
 
 logger = get_task_logger(__name__)
 
@@ -69,7 +68,11 @@ def run_backtest(self, job_id: str, params: dict):
     signal_matrix = signal_matrix.reindex(columns=prices.columns).ffill().T
 
     # Run backtest
-    backtester = VectorizedBacktest(prices=prices, signals=signal_matrix, initial_capital=params.get("initial_capital", 1_000_000))
+    backtester = VectorizedBacktest(
+        prices=prices,
+        signals=signal_matrix,
+        initial_capital=params.get("initial_capital", 1_000_000),
+    )
     redis_client.publish(channel, json.dumps({"type": "progress", "percent": 10}))
 
     results = backtester.run(weight_scheme=params.get("weight_scheme", "rank"))
