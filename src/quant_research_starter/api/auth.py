@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -13,12 +13,14 @@ from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import db, models
+from . import supabase
+import secrets
 
 SECRET_KEY = os.getenv("JWT_SECRET", "dev-secret-change-me")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "60"))
 
-pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_ctx = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
 
@@ -41,20 +43,48 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(db.get_session)
+    token: Annotated[str, Depends(oauth2_scheme)],
+    session: Annotated[AsyncSession, Depends(db.get_session)],
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    # If Supabase is configured, prefer verifying tokens via Supabase
+    if supabase.is_enabled():
+        user_info = supabase.get_user_from_token(token)
+        if not user_info:
+            raise credentials_exception
+        # Map/ensure a local user exists for this supabase user (by email)
+        email = user_info.get("email")
+        if not email:
+            raise credentials_exception
+
+        q = await session.execute(
+            models.User.__table__.select().where(models.User.username == email)
+        )
+        row = q.first()
+        if row:
+            return row[0]
+
+        # Create a local user mapping (no password — managed by Supabase)
+        random_pw = secrets.token_urlsafe(32)
+        hashed = pwd_ctx.hash(random_pw)
+        user = models.User(username=email, hashed_password=hashed)
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        return user
+
+    # Local JWT flow
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
     except JWTError:
-        raise credentials_exception
+        raise credentials_exception from None
 
     q = await session.execute(
         models.User.__table__.select().where(models.User.username == username)
@@ -66,7 +96,7 @@ async def get_current_user(
     return user
 
 
-async def require_active_user(current_user=Depends(get_current_user)):
+async def require_active_user(current_user: Annotated[models.User, Depends(get_current_user)]):
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user

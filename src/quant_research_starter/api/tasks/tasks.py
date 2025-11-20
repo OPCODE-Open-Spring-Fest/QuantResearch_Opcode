@@ -21,12 +21,19 @@ REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 redis_client = Redis.from_url(REDIS_URL)
 
 
+def _safe_publish(channel: str, payload: str):
+    try:
+        redis_client.publish(channel, payload)
+    except Exception:
+        logger.warning("Could not publish to Redis channel %s (connection unavailable)", channel)
+
+
 @celery_app.task(bind=True, name="quant_research_starter.api.tasks.tasks.run_backtest")
 def run_backtest(self, job_id: str, params: dict):
     """Run a backtest synchronously in worker process and publish progress to Redis."""
     logger.info("Starting backtest job %s", job_id)
     channel = f"backtest:{job_id}"
-    redis_client.publish(channel, json.dumps({"type": "started"}))
+    _safe_publish(channel, json.dumps({"type": "started"}))
     try:
         # mark job as running in DB
         update_job_status(job_id, "running")
@@ -54,29 +61,30 @@ def run_backtest(self, job_id: str, params: dict):
         else:
             signals = signals_df.iloc[:, 0]
     else:
-        # compute demo momentum
+        # compute demo momentum (per-symbol signals)
         from quant_research_starter.factors.momentum import MomentumFactor
 
         mom = MomentumFactor(lookback=63)
-        signals = mom.compute(prices).mean(axis=1)
+        signals = mom.compute(prices)
 
-    # Align & expand
+    # Align dates and symbols between prices and signals
     common_dates = prices.index.intersection(signals.index)
     prices = prices.loc[common_dates]
     signals = signals.loc[common_dates]
-    signal_matrix = signals.to_frame().T
-    signal_matrix = signal_matrix.reindex(columns=prices.columns).ffill().T
+
+    # Ensure signals have same columns as prices (symbols), forward-fill missing
+    signals = signals.reindex(columns=prices.columns).ffill().fillna(0.0)
 
     # Run backtest
     backtester = VectorizedBacktest(
         prices=prices,
-        signals=signal_matrix,
+        signals=signals,
         initial_capital=params.get("initial_capital", 1_000_000),
     )
-    redis_client.publish(channel, json.dumps({"type": "progress", "percent": 10}))
+    _safe_publish(channel, json.dumps({"type": "progress", "percent": 10}))
 
     results = backtester.run(weight_scheme=params.get("weight_scheme", "rank"))
-    redis_client.publish(channel, json.dumps({"type": "progress", "percent": 90}))
+    _safe_publish(channel, json.dumps({"type": "progress", "percent": 90}))
 
     # Metrics
     rm = RiskMetrics(results["returns"])
@@ -101,6 +109,6 @@ def run_backtest(self, job_id: str, params: dict):
         logger.exception("Failed to update job status to done")
 
     # Publish done
-    redis_client.publish(channel, json.dumps({"type": "done", "result_path": out_path}))
+    _safe_publish(channel, json.dumps({"type": "done", "result_path": out_path}))
 
     return {"job_id": job_id, "result_path": out_path}

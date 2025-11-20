@@ -2,11 +2,13 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navigation } from './components/Navigation';
 import { Header } from './components/Header';
+import AuthFloatingButton from './components/AuthFloatingButton';
 import { Dashboard } from './pages/Dashboard';
 import { BacktestStudio } from './pages/BacktestStudio';
 import { ResearchLab } from './pages/ResearchLab';
 import { PortfolioAnalytics } from './pages/PortfolioAnalytics';
 import { Settings } from './pages/Settings';
+import { AuthPage } from './pages/Auth';
 import './styles/globals.css';
 
 
@@ -17,9 +19,11 @@ export const App: React.FC = () => {
         <Navigation />
         <div className="main-content">
           <Header />
+          <AuthFloatingButton />
           <div className="page-content">
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/login" element={<AuthPage />} />
               <Route path="/backtest" element={<BacktestStudio />} />
               <Route path="/research" element={<ResearchLab />} />
               <Route path="/portfolio" element={<PortfolioAnalytics />} />

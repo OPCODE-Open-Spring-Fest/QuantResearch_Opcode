@@ -9,7 +9,7 @@ import json
 import os
 from typing import Dict, Set
 
-import aioredis
+import redis.asyncio as redis
 from fastapi import WebSocket
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
@@ -40,8 +40,8 @@ manager = ConnectionManager()
 
 
 async def redis_listener_loop():
-    redis = aioredis.from_url(REDIS_URL)
-    pubsub = redis.pubsub()
+    r = redis.from_url(REDIS_URL)
+    pubsub = r.pubsub()
     await pubsub.psubscribe("backtest:*")
 
     async for message in pubsub.listen():

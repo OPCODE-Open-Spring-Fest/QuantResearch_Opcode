@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Bell, Search, User, Settings, LogOut, ChevronDown, Menu, X } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export const Header = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -44,11 +46,25 @@ export const Header = () => {
     console.log("Mobile search activated");
   };
 
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
   // Handle profile actions
   const handleProfileAction = (action: string) => {
     setIsProfileOpen(false);
-    console.log(`${action} clicked`);
-    // Add your navigation or action logic here
+    if (action === 'Sign Out') {
+      signOut();
+      navigate('/login');
+      return;
+    }
+    if (action === 'Profile') {
+      navigate('/settings');
+      return;
+    }
+    if (action === 'Settings') {
+      navigate('/settings');
+      return;
+    }
   };
 
   return (
@@ -138,69 +154,75 @@ export const Header = () => {
             </span>
           </button>
           
-          {/* Profile Dropdown */}
-          <div ref={profileRef} className="relative">
-            <button
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-              aria-label="User menu"
-              aria-expanded={isProfileOpen}
-            >
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-sm">
-                <User className="w-4 h-4 text-white" />
-              </div>
-              <div className="hidden sm:flex items-center space-x-1">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Sarah Wilson
-                </span>
-                <ChevronDown
-                  className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${
-                    isProfileOpen ? 'rotate-180' : ''
-                  }`}
-                />
-              </div>
-            </button>
-            
-            {/* Dropdown Menu */}
-            {isProfileOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
-                <div className="py-1">
-                  {/* Mobile-only user name */}
-                  <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 sm:hidden">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Sarah Wilson
-                    </span>
-                  </div>
-                  
-                  <button
-                    onClick={() => handleProfileAction('Profile')}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
-                  >
-                    <User className="w-4 h-4 mr-3" />
-                    Profile
-                  </button>
-                  
-                  <button
-                    onClick={() => handleProfileAction('Settings')}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
-                  >
-                    <Settings className="w-4 h-4 mr-3" />
-                    Settings
-                  </button>
-                  
-                  <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
-                  
-                  <button
-                    onClick={() => handleProfileAction('Sign Out')}
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150"
-                  >
-                    <LogOut className="w-4 h-4 mr-3" />
-                    Sign Out
-                  </button>
+          {/* Profile Dropdown or Login Button */}
+          {user ? (
+            <div ref={profileRef} className="relative">
+              <button
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                aria-label="User menu"
+                aria-expanded={isProfileOpen}
+              >
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-sm">
+                  <User className="w-4 h-4 text-white" />
                 </div>
-              </div>
-            )}
-          </div>
+                <div className="hidden sm:flex items-center space-x-1">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{user?.email}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${
+                      isProfileOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </div>
+              </button>
+
+              {/* Dropdown Menu */}
+              {isProfileOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                  <div className="py-1">
+                    <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 sm:hidden">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{user?.email}</span>
+                    </div>
+
+                    <button
+                      onClick={() => handleProfileAction('Profile')}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
+                    >
+                      <User className="w-4 h-4 mr-3" />
+                      Profile
+                    </button>
+
+                    <button
+                      onClick={() => handleProfileAction('Settings')}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
+                    >
+                      <Settings className="w-4 h-4 mr-3" />
+                      Settings
+                    </button>
+
+                    <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+
+                    <button
+                      onClick={() => handleProfileAction('Sign Out')}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150"
+                    >
+                      <LogOut className="w-4 h-4 mr-3" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div>
+              <button
+                onClick={() => navigate('/login')}
+                className="px-3 py-1 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
+              >
+                Login / Sign up
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

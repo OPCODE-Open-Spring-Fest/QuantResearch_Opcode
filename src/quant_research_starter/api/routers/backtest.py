@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import uuid
+from typing import Annotated
 
 from fastapi import (
     APIRouter,
@@ -23,8 +24,8 @@ router = APIRouter(prefix="/api/backtest", tags=["backtest"])
 @router.post("/", response_model=schemas.BacktestStatus)
 async def submit_backtest(
     req: schemas.BacktestRequest,
-    current_user=Depends(auth.require_active_user),
-    session: AsyncSession = Depends(db.get_session),
+    current_user: Annotated[models.User, Depends(auth.require_active_user)],
+    session: Annotated[AsyncSession, Depends(db.get_session)],
 ):
     # Create job
     job_id = uuid.uuid4().hex
@@ -45,8 +46,8 @@ async def submit_backtest(
 @router.get("/{job_id}/results")
 async def get_results(
     job_id: str,
-    current_user=Depends(auth.require_active_user),
-    session: AsyncSession = Depends(db.get_session),
+    current_user: Annotated[models.User, Depends(auth.require_active_user)],
+    session: Annotated[AsyncSession, Depends(db.get_session)],
 ):
     q = await session.execute(
         models.BacktestJob.__table__.select().where(models.BacktestJob.id == job_id)
@@ -77,7 +78,7 @@ async def websocket_backtest(websocket: WebSocket, job_id: str):
     try:
         while True:
             # keep the connection alive; client may send ping messages
-            msg = await websocket.receive_text()
+            await websocket.receive_text()
             # ignore incoming messages; server pushes updates
             await websocket.send_text("ok")
     except Exception:

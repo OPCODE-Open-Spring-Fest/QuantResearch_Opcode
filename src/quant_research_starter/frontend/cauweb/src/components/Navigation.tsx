@@ -15,7 +15,8 @@ export const Navigation: React.FC = () => {
     { path: '/backtest', icon: PlayCircle, label: 'Backtest Studio' },
     { path: '/research', icon: Beaker, label: 'Research Lab' },
     { path: '/portfolio', icon: PieChart, label: 'Portfolio Analytics' },
-    { path: '/settings', icon: Settings, label: 'Settings' }
+    { path: '/settings', icon: Settings, label: 'Settings' },
+    { path: '/login', icon: TrendingUp, label: 'Login' }
   ];
 
   return (

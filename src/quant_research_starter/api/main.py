@@ -6,6 +6,7 @@ import os
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .routers import assets as assets_router
 from .routers import auth as auth_router
 from .routers import backtest as backtest_router
 from .utils.ws_manager import redis_listener_loop

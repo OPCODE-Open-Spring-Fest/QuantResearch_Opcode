@@ -1,18 +1,30 @@
 """Authentication routes: register and token endpoints."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import auth, db, models, schemas
+from .. import supabase
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=schemas.UserRead)
 async def register_user(
-    user_in: schemas.UserCreate, session: AsyncSession = Depends(db.get_session)
+    user_in: schemas.UserCreate,
+    session: Annotated[AsyncSession, Depends(db.get_session)],
 ):
+    # If Supabase is configured, forward signup to Supabase and then create
+    # a local mapping record for the user (so other resources keep integer IDs).
+    if supabase.is_enabled():
+        try:
+            supabase.signup(user_in.username, user_in.password)
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+
     q = await session.execute(
         models.User.__table__.select().where(models.User.username == user_in.username)
     )
@@ -30,9 +42,18 @@ async def register_user(
 
 @router.post("/token", response_model=schemas.Token)
 async def login_for_access_token(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    session: AsyncSession = Depends(db.get_session),
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    session: Annotated[AsyncSession, Depends(db.get_session)],
 ):
+    # If Supabase is enabled, use Supabase to obtain token
+    if supabase.is_enabled():
+        try:
+            token_response = supabase.sign_in(form_data.username, form_data.password)
+            # token_response may contain access_token and refresh_token
+            return {"access_token": token_response.get("access_token"), "token_type": "bearer"}
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+
     q = await session.execute(
         models.User.__table__.select().where(models.User.username == form_data.username)
     )

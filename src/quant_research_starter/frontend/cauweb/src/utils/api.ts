@@ -15,11 +15,33 @@ export interface BacktestResult {
   trades: any[];
 }
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
+async function getAuthHeader(): Promise<Record<string, string>> {
+  try {
+    const token = window.localStorage.getItem('sb:token');
+    if (token) return { Authorization: `Bearer ${token}` };
+  } catch (err) {
+    // ignore
+  }
+  return {};
+}
+
 export const api = {
   async runBacktest(config: any): Promise<BacktestResult> {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+    if (API_BASE) {
+      const headers = await getAuthHeader();
+      const resp = await fetch(`${API_BASE}/api/backtest/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: JSON.stringify(config),
+      });
+      if (!resp.ok) throw new Error(`API error ${resp.status}`);
+      return resp.json();
+    }
+
+    // Fallback: simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     return {
       metrics: {
         totalReturn: 0.2345,
@@ -28,22 +50,28 @@ export const api = {
         sharpeRatio: 1.234,
         maxDrawdown: 0.1234,
         winRate: 0.645,
-        turnover: 2.34
+        turnover: 2.34,
       },
       portfolioSnapshots: generateDemoSnapshots(),
-      trades: []
+      trades: [],
     };
   },
 
   async getAssets(): Promise<any[]> {
+    if (API_BASE) {
+      const headers = await getAuthHeader();
+      const resp = await fetch(`${API_BASE}/api/assets/`, { headers });
+      if (!resp.ok) throw new Error(`API error ${resp.status}`);
+      return resp.json();
+    }
     return [
       { symbol: 'AAPL', name: 'Apple Inc.', sector: 'Technology', marketCap: 2800000000000, price: 182.63 },
       { symbol: 'MSFT', name: 'Microsoft Corp.', sector: 'Technology', marketCap: 2750000000000, price: 370.73 },
       { symbol: 'GOOGL', name: 'Alphabet Inc.', sector: 'Technology', marketCap: 1750000000000, price: 138.21 },
       { symbol: 'AMZN', name: 'Amazon.com Inc.', sector: 'Consumer', marketCap: 1500000000000, price: 145.18 },
-      { symbol: 'TSLA', name: 'Tesla Inc.', sector: 'Consumer', marketCap: 750000000000, price: 238.83 }
+      { symbol: 'TSLA', name: 'Tesla Inc.', sector: 'Consumer', marketCap: 750000000000, price: 238.83 },
     ];
-  }
+  },
 };
 
 function generateDemoSnapshots() {

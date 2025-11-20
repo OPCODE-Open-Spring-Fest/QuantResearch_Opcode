@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Header } from '../components/Header';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -218,6 +219,7 @@ export const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
       {/* Header Section */}
+      {/* <Header/> */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>

@@ -9,6 +9,7 @@
     "lint": "eslint src --ext .ts,.tsx"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.83.0",
     "@tailwindcss/vite": "^4.1.17",
     "chart.js": "^4.5.1",
     "lucide-react": "^0.263.1",

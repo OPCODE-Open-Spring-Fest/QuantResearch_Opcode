@@ -1,0 +1,18 @@
+# Developer and test dependencies for running the test suite locally
+# Install with: pip install -r requirements-dev.txt
+
+# testing and async test helpers
+pytest
+pytest-asyncio
+httpx
+
+# optional/runtime packages used by the API and tasks
+python-jose[cryptography]
+passlib[bcrypt]
+asyncpg
+celery
+redis
+alembic
+
+# DB / ORM
+SQLAlchemy>=1.4
