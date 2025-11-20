@@ -1,6 +1,8 @@
 # test_conn.py
 import asyncio
+
 import asyncpg
+
 
 async def main():
     try:

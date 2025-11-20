@@ -4,8 +4,9 @@ Usage:
     python scripts/run_migrations.py
 """
 import os
-from alembic.config import Config
+
 from alembic import command
+from alembic.config import Config
 
 here = os.path.dirname(__file__)
 alembic_cfg = Config(os.path.join(here, "..", "alembic.ini"))

@@ -1,0 +1,21 @@
+# Exclude non-Python files, build artifacts and frontend bundles from ruff scanning
+exclude = [
+  "**/dist/**",
+  "**/node_modules/**",
+  "**/__pycache__/**",
+  "**/*.pyc",
+  "requirements*.txt",
+  "tracked.txt",
+  "pytest.ini",
+  ".git",
+  ".github",
+  "src/quant_research_starter/frontend/cauweb/dist/**"
+]
+
+# Project line length
+line-length = 88
+
+# Lint-specific settings
+[lint]
+# Use this to extend ignored error codes (legacy key moved here)
+extend-ignore = []

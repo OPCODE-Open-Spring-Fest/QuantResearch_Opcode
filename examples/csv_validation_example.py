@@ -84,9 +84,9 @@ def example_error_handling():
         print(f"✓ Loaded {len(prices)} rows of price data")
         return prices
 
-    # Try with a file
+    # Try with a file (we only demonstrate loading; don't keep the returned value)
     try:
-        prices = load_and_validate_prices("data/sample_prices.csv")
+        load_and_validate_prices("data/sample_prices.csv")
     except ValueError as e:
         print(f"✗ Error: {e}")
     except FileNotFoundError:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import secrets
 from datetime import datetime, timedelta
 from typing import Annotated, Optional
 
@@ -12,9 +13,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from . import db, models
-from . import supabase
-import secrets
+from . import db, models, supabase
 
 SECRET_KEY = os.getenv("JWT_SECRET", "dev-secret-change-me")
 ALGORITHM = "HS256"

@@ -5,9 +5,9 @@ This helper is used as part of the Docker entrypoint to ensure services
 are available before starting the web server or worker.
 """
 import os
-import time
 import socket
 import sys
+import time
 
 
 def wait_tcp(host: str, port: int, timeout: int = 60) -> bool:

@@ -6,8 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .. import auth, db, models, schemas
-from .. import supabase
+from .. import auth, db, models, schemas, supabase
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -23,7 +22,7 @@ async def register_user(
         try:
             supabase.signup(user_in.username, user_in.password)
         except Exception as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     q = await session.execute(
         models.User.__table__.select().where(models.User.username == user_in.username)
@@ -52,7 +51,7 @@ async def login_for_access_token(
             # token_response may contain access_token and refresh_token
             return {"access_token": token_response.get("access_token"), "token_type": "bearer"}
         except Exception as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     q = await session.execute(
         models.User.__table__.select().where(models.User.username == form_data.username)
