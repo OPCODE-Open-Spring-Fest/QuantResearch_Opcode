@@ -25,7 +25,9 @@ def _safe_publish(channel: str, payload: str):
     try:
         redis_client.publish(channel, payload)
     except Exception:
-        logger.warning("Could not publish to Redis channel %s (connection unavailable)", channel)
+        logger.warning(
+            "Could not publish to Redis channel %s (connection unavailable)", channel
+        )
 
 
 @celery_app.task(bind=True, name="quant_research_starter.api.tasks.tasks.run_backtest")

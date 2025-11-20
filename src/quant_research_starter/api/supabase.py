@@ -29,7 +29,9 @@ def signup(email: str, password: str) -> dict:
     assert is_enabled(), "Supabase not configured"
     url = f"{SUPABASE_URL.rstrip('/')}/auth/v1/signup"
     headers = {"apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json"}
-    resp = requests.post(url, json={"email": email, "password": password}, headers=headers)
+    resp = requests.post(
+        url, json={"email": email, "password": password}, headers=headers
+    )
     resp.raise_for_status()
     return resp.json()
 
@@ -39,7 +41,9 @@ def sign_in(email: str, password: str) -> dict:
     assert is_enabled(), "Supabase not configured"
     url = f"{SUPABASE_URL.rstrip('/')}/auth/v1/token?grant_type=password"
     headers = {"apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json"}
-    resp = requests.post(url, json={"email": email, "password": password}, headers=headers)
+    resp = requests.post(
+        url, json={"email": email, "password": password}, headers=headers
+    )
     resp.raise_for_status()
     return resp.json()
 

@@ -49,7 +49,10 @@ async def login_for_access_token(
         try:
             token_response = supabase.sign_in(form_data.username, form_data.password)
             # token_response may contain access_token and refresh_token
-            return {"access_token": token_response.get("access_token"), "token_type": "bearer"}
+            return {
+                "access_token": token_response.get("access_token"),
+                "token_type": "bearer",
+            }
         except Exception as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
