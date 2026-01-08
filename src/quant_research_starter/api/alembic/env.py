@@ -2,9 +2,16 @@ from __future__ import with_statement
 
 import os
 from logging.config import fileConfig
+from pathlib import Path
 
+from dotenv import load_dotenv
 from alembic import context
 from sqlalchemy import engine_from_config, pool
+
+# Load .env file
+env_path = Path(__file__).parent.parent.parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -24,7 +31,11 @@ if config.config_file_name is not None:
 
         logging.basicConfig(level=logging.INFO)
 
-target_metadata = None
+# Import models for autogenerate support
+from quant_research_starter.api.db import Base
+from quant_research_starter.api.models import User, BacktestJob, Portfolio, Position, Trade, StockQuote, CompanyProfile
+
+target_metadata = Base.metadata
 
 # Use DATABASE_URL env if provided
 db_url = os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
@@ -48,6 +59,10 @@ def run_migrations_online():
     # while delegating the actual migration steps to a sync callable via
     # `connection.run_sync`. Otherwise, fall back to the classic sync path.
     url = config.get_main_option("sqlalchemy.url")
+    
+    # Ensure we have a URL
+    if not url:
+        raise ValueError("No database URL found in alembic.ini or DATABASE_URL environment variable")
 
     def _do_run_migrations(connection):
         context.configure(connection=connection, target_metadata=target_metadata)
@@ -70,7 +85,7 @@ def run_migrations_online():
     else:
         # Sync migration path (classic)
         connectable = engine_from_config(
-            config.get_section(config.config_ini_section),
+            {**config.get_section(config.config_ini_section, {}), "url": url},
             prefix="sqlalchemy.",
             poolclass=pool.NullPool,
         )
