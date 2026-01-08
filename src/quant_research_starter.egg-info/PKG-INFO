@@ -29,6 +29,17 @@ Requires-Dist: fastapi>=0.100.0
 Requires-Dist: uvicorn>=0.23.0
 Requires-Dist: python-dotenv>=1.0.0
 Requires-Dist: requests>=2.31.0
+Requires-Dist: optuna>=3.0.0
+Requires-Dist: pyyaml>=6.0
+Requires-Dist: sqlalchemy>=2.0.0
+Requires-Dist: asyncpg>=0.29.0
+Requires-Dist: alembic>=1.12.0
+Requires-Dist: redis>=5.0.0
+Requires-Dist: celery>=5.3.0
+Requires-Dist: python-multipart>=0.0.6
+Requires-Dist: python-jose[cryptography]>=3.3.0
+Requires-Dist: passlib[bcrypt]>=1.7.4
+Requires-Dist: websockets>=12.0
 Provides-Extra: dev
 Requires-Dist: pytest>=7.4.0; extra == "dev"
 Requires-Dist: pytest-cov>=4.1.0; extra == "dev"
@@ -41,228 +52,329 @@ Requires-Dist: ipywidgets>=8.0.0; extra == "notebook"
 Requires-Dist: ipykernel>=6.0.0; extra == "notebook"
 Dynamic: license-file
 
-# QuantResearchStarter
+# QuantResearch
 
-[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![CI](https://github.com/username/QuantResearchStarter/actions/workflows/ci.yml/badge.svg)](https://github.com/username/QuantResearchStarter/actions)
+check out the [link](https://qrsopcode.netlify.app/)
 
-A modular, open-source quantitative research and backtesting framework built for clarity, reproducibility, and extensibility. Ideal for researchers, students, and engineers building and testing systematic strategies.
+> **QuantResearch** — research-grade quantitative strategy starter kit with an interactive React/TypeScript frontend (cauweb), Python backtesting core, and legacy Streamlit dashboards archived under `legacy/streamlit/`.
 
 ---
 
-## Why this project
+## Table of contents
 
-QuantResearchStarter aims to provide a clean, well-documented starting point for quantitative research and backtesting. It focuses on:
+* [Project overview](#project-overview)
+* [What’s included](#whats-included)
+* [Prerequisites](#prerequisites)
+* [Quickstart (dev)](#quickstart-dev)
 
-* **Readability**: idiomatic Python, type hints, and small modules you can read and change quickly.
-* **Testability**: deterministic vectorized backtests with unit tests and CI.
-* **Extensibility**: plug-in friendly factor & data adapters so you can try new ideas fast.
-
----
-
-## Key features
-
-* **Data management** — download market data or generate synthetic price series for experiments.
-* **Factor library** — example implementations of momentum, value, size, and volatility factors.
-* **Vectorized backtesting engine** — supports transaction costs, slippage, portfolio constraints, and configurable rebalancing frequencies (daily, weekly, monthly).
-* **Risk & performance analytics** — returns, drawdowns, Sharpe, turnover, and other risk metrics.
-* **CLI & scripts** — small tools to generate data, compute factors, and run backtests from the terminal.
-* **Production-ready utilities** — type hints, tests, continuous integration, and documentation scaffolding.
-
----
-
-## Quick start
-
-### Requirements
-
-* Python 3.10+
-* pip
-
-### Install locally
-
-```bash
-# Clone the repository
-git clone https://github.com/username/QuantResearchStarter.git
-cd QuantResearchStarter
-
-# Install package in development mode
-pip install -e .
-
-# Install development dependencies (tests, linters, docs)
-pip install -e ".[dev]"
-
-# Optional UI dependencies
-pip install streamlit plotly
-```
-
-### Quick CLI Usage
-
-After installation, you can use the CLI in two ways:
-
-**Option 1: Direct command (if PATH is configured)**
-```bash
-qrs --help
-# generate synthetic sample price series
-qrs generate-data -o data_sample/sample_prices.csv -s 5 -d 365
-# compute example factors
-qrs compute-factors -d data_sample/sample_prices.csv -f momentum -f value -o output/factors.csv
-# run a backtest
-qrs backtest -d data_sample/sample_prices.csv -s output/factors.csv -o output/backtest_results.json
-```
-
-**Option 2: Python module (always works)**
-```bash
-python -m quant_research_starter.cli --help
-python -m quant_research_starter.cli generate-data -o data_sample/sample_prices.csv -s 5 -d 365
-python -m quant_research_starter.cli compute-factors -d data_sample/sample_prices.csv -f momentum -f value
-python -m quant_research_starter.cli backtest -d data_sample/sample_prices.csv -s output/factors.csv -o output/backtest_results.json
-```
-
-### Demo (one-line)
-
-```bash
-make demo
-```
-
-### Step-by-step demo
-
-```bash
-# generate synthetic sample price series
-python -m quant_research_starter.cli generate-data -o data_sample/sample_prices.csv -s 5 -d 365
-
-# compute example factors
-python -m quant_research_starter.cli compute-factors -d data_sample/sample_prices.csv -f momentum -f value -o output/factors.csv
-
-# run a backtest
-python -m quant_research_starter.cli backtest -d data_sample/sample_prices.csv -s output/factors.csv -o output/backtest_results.json
-
-# optional: start the Streamlit dashboard
-streamlit run src/quant_research_starter/dashboard/streamlit_app.py
-```
+  * [Run backend (Python)](#run-backend-python)
+  * [Run frontend (cauweb)](#run-frontend-cauweb)
+  * [Run with mock WS / demo mode](#run-with-mock-ws--demo-mode)
+* [Production build & docker](#production-build--docker)
+* [Realtime contract & WS guide](#realtime-contract--ws-guide)
+* [APIs & Data flows](#apis--data-flows)
+* [Testing & CI](#testing--ci)
+* [Streamlit (legacy) status & migration notes](#streamlit-legacy-status--migration-notes)
+* [Developer workflow & conventions](#developer-workflow--conventions)
+* [Contributing](#contributing)
+* [Roadmap / recommended next issues](#roadmap--recommended-next-issues)
+* [License & contact](#license--contact)
 
 ---
 
-## Example: small strategy (concept)
+## Project overview
 
-```python
-from quant_research_starter.backtest import Backtester
-from quant_research_starter.data import load_prices
-from quant_research_starter.factors import Momentum
+This repository provides a complete starter environment for research and prototyping in quantitative finance. It consists of:
 
-prices = load_prices("data_sample/sample_prices.csv")
-factor = Momentum(window=63)
-scores = factor.compute(prices)
+* A **Python core** for factor computation, backtesting, and research workflows (packaged under `src/quant_research_starter/`).
+* A modern **React + TypeScript frontend** at `src/quant_research_starter/frontend/cauweb/` for interactive dashboards, live visualizations, strategy management and job control.
+* A legacy **Streamlit** UI archived under `legacy/streamlit/` (kept for reference and reproducibility).
+* Tooling to support reproducible experiments, unit tests, linting, and CI automation.
 
-bt = Backtester(prices, signals=scores, capital=1_000_000)
-results = bt.run()
-print(results.performance.summary())
-```
-
-### Rebalancing Frequency
-
-The backtester supports different rebalancing frequencies to match your strategy needs:
-
-```python
-from quant_research_starter.backtest import VectorizedBacktest
-
-# Daily rebalancing (default)
-bt_daily = VectorizedBacktest(prices, signals, rebalance_freq="D")
-
-# Weekly rebalancing (reduces turnover and transaction costs)
-bt_weekly = VectorizedBacktest(prices, signals, rebalance_freq="W")
-
-# Monthly rebalancing (lowest turnover)
-bt_monthly = VectorizedBacktest(prices, signals, rebalance_freq="M")
-
-results = bt_monthly.run()
-```
-
-Supported frequencies:
-- `"D"`: Daily rebalancing (default)
-- `"W"`: Weekly rebalancing (rebalances when the week changes)
-- `"M"`: Monthly rebalancing (rebalances when the month changes)
-
-> The code above is illustrative—see `examples/` for fully working notebooks and scripts.
+This README explains how to run both components in dev and production, how realtime is wired, and how to extend the system.
 
 ---
 
-## CLI reference
-
-Run `python -m quant_research_starter.cli --help` or `python -m quant_research_starter.cli <command> --help` for full usage. Main commands include:
-
-* `python -m quant_research_starter.cli generate-data` — create synthetic price series or download data from adapters
-* `python -m quant_research_starter.cli compute-factors` — calculate and export factor scores
-* `python -m quant_research_starter.cli backtest` — run the vectorized backtest and export results
-
-**Note:** If you have the `qrs` command in your PATH, you can use `qrs` instead of `python -m quant_research_starter.cli`.
-
----
-
-## Project structure (overview)
+## What’s included (high-level)
 
 ```
-QuantResearchStarter/
+/ (repo root)
 ├─ src/quant_research_starter/
-│  ├─ data/              # data loaders & adapters
-│  ├─ factors/           # factor implementations
-│  ├─ backtest/          # backtester & portfolio logic
-│  ├─ analytics/         # performance and risk metrics
-│  ├─ cli/               # command line entry points
-│  └─ dashboard/         # optional Streamlit dashboard
-├─ examples/             # runnable notebooks & example strategies
-├─ tests/                # unit + integration tests
-└─ docs/                 # documentation source
+│  ├─ core/            # Python backtest + factors + utils
+│  ├─ api/             # Python FastAPI or Flask endpoints (if present)
+│  └─ frontend/
+│     └─ cauweb/       # React + TS frontend
+├─ legacy/streamlit/   # archived Streamlit apps (read-only)
+├─ notebooks/          # Demo notebooks and reproducible examples
+├─ tests/              # Unit tests (python) + frontend tests
+├─ .github/            # CI workflows (build, tests, docs)
+└─ pyproject.toml / package.json
 ```
 
 ---
 
-## Tests & CI
+## Prerequisites
 
-We include unit tests and a CI workflow (GitHub Actions). Run tests locally with:
+* **Node**: v18.x or later (use nvm to manage) — used by `cauweb` (frontend)
+* **Yarn** or **npm**: prefer `npm ci` for CI reproducibility
+* **Python**: 3.10 / 3.11 (or the version pinned in `pyproject.toml`)
+* Optional: **Docker** for containerized builds
+* Optional: **VS Code** + Remote Containers if using `.devcontainer`
+
+Ensure `NODE_ENV` and Python virtualenv are isolated per project.
+
+---
+
+## Quickstart (dev)
+
+Follow these steps to run the backend and frontend locally. The instructions assume you're at the repo root.
+
+### 1) Set up Python env & install backend deps: to be updated
+
+<!-- ```bash
+# create venv (example)
+python -m venv .venv
+source .venv/bin/activate    # Linux / macOS
+.\.venv\Scripts\activate   # Windows CMD
+
+# install
+pip install -U pip
+pip install -e .[dev]
+# or use poetry / pipx if project uses it
+```
+
+Run any database migrations or data bootstrap steps if the repo documents them (check `src/quant_research_starter/api/README.md`). -->
+
+<!-- ### 2) Start the Python backend (dev server) : to be updated soon
+
+If the backend is FastAPI / Flask, typical commands:
 
 ```bash
+# FastAPI example (uvicorn)
+cd src/quant_research_starter
+uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+
+# or if a Makefile is provided
+make dev-backend
+```
+
+Confirm the REST endpoints (e.g., `GET /health`) are reachable at `http://localhost:8000`. -->
+
+### 3) Run cauweb (React + TS) in dev mode
+
+Open a new terminal and run:
+
+```bash
+cd src/quant_research_starter/frontend/cauweb
+npm i --save-dev
+npm run dev
+```
+<!-- 
+* The dev server typically runs at `http://localhost:3000` (or the port shown on start).
+* The frontend dev server is configured to proxy `/api` to `http://localhost:8000` — see `vite.config.js` or `webpack.dev.js` for proxy settings. -->
+
+<!-- If environment variables are required, copy `.env.example` → `.env.local` and edit values. -->
+
+<!-- ### 4) Optional: Run with mock WS server (dev/demo mode)
+
+We provide a small mock WS generator for local demos. From `cauweb/`:
+
+```bash
+# run mock WS generator (node script)
+node scripts/mock-ws-server.js --port 9000 --seed 42 --rate 50
+
+# then start cauweb in mock mode (example query param)
+npm run dev -- -- --open "http://localhost:3000/?mock=true&ws=http://localhost:9000"
+```
+
+The mock server emits `tick`, `heartbeat`, `order_update` events useful for UI development.
+
+--- -->
+
+## Production build & Docker
+
+### Frontend static build
+
+From `cauweb`:
+
+```bash
+npm ci
+npm run build
+# output directory typically `dist/` or `build/`
+```
+<!-- 
+Test serve locally with `serve` or a small Nginx container:
+
+```bash
+npm install -g serve
+serve -s dist -l 8080
+``` -->
+
+<!-- ### Build Docker image (frontend)
+
+*Tip:* `Dockerfile.frontend` should be present. Build and run:
+
+```bash
+docker build -f Dockerfile.frontend -t qrs-cauweb:latest .
+docker run -p 8080:80 qrs-cauweb:latest
+``` -->
+
+<!-- ### Backend production
+
+Use your normal WSGI/ASGI server + env+secrets management. Example (uvicorn + systemd) or containerize with a `Dockerfile.backend`. -->
+
+<!-- ### Full-stack deployment recommendations
+
+* For static frontend hosting: **Vercel** or **Netlify** for quick deploys. Use `vercel.json` or `netlify.toml` for rewrites to the API.
+* For containerized deploys: build images for backend and frontend; host in Kubernetes or ECS/Fargate with autoscaling. Use a managed Redis for pub/sub and secure the WS gateway.
+
+--- -->
+
+<!-- ## Realtime contract & WS guide
+
+The frontend expects a stable WS message contract. A suggested minimal schema (example):
+
+```json
+{
+  "schema_version": "1.0",
+  "type": "tick",            # tick | snapshot | order_update | backtest_progress | heartbeat | error
+  "topic": "price:AAPL",   # topic or room
+  "payload": {
+    "timestamp": "2025-11-14T12:34:56.789Z",
+    "price": 192.45,
+    "volume": 1200
+  }
+}
+``` -->
+
+<!-- Best practices:
+
+* Use topic-based subscriptions: `subscribe(topic)` and `unsubscribe(topic)` so the server publishes minimal data to active clients.
+* Include `schema_version` and a short `message_id` for idempotency and replay.
+* Implement heartbeat/ping-pong for stale detection. -->
+
+<!-- Where to find client code:
+
+* `src/quant_research_starter/frontend/cauweb/src/lib/wsClient.ts` — typed, reconnecting WS client (if present) -->
+
+<!-- Server responsibilities:
+
+* Translate backend events (backtest updates, order events) into WS messages and publish to Redis pub/sub / message broker.
+* Implement room/topic filtering and auth checks on subscribe.
+
+---
+
+## APIs & Data flows: to be updated
+
+* **Backtest flow**: Frontend POSTs to `/api/backtest` with strategy config → backend enqueues job → backend emits progress to `backtest:{job_id}` → final results stored in DB and accessible via `/api/backtest/{job_id}/results`.
+* **Strategy CRUD**: REST endpoints for strategy create / update / delete, with validation in Python core.
+* **Data adapters**: optional connectors (yfinance, AlphaVantage) are in `src/quant_research_starter/core/data_adapters/`.
+
+> See `src/quant_research_starter/api/README.md` (if present) for detailed endpoint docs.
+
+--- -->
+
+## Testing & CI: to be updated
+
+<!-- ### Python unit tests
+
+```bash
+# from repo root
 pytest -q
 ```
 
-The CI pipeline runs linting, unit tests, and builds docs on push/PR.
+### Frontend tests
+
+```bash
+cd src/quant_research_starter/frontend/cauweb
+npm ci
+npm run test        # unit tests
+npm run test:e2e    # Playwright / Selenium tests (if configured)
+``` -->
+
+<!-- ### Linting & types
+
+```bash
+# TS typecheck
+npm run typecheck
+# ESLint
+npm run lint
+# Prettier formatting
+npm run format
+```
+
+CI workflows are in `.github/workflows/` — they typically run linters, unit tests and publish artifacts. -->
+
+---
+
+## Streamlit (legacy) — archived
+
+The Streamlit dashboard is preserved under `legacy/streamlit/` for historical reference. It is **not** the primary UI anymore. If you need to run it:
+
+```bash
+cd legacy/streamlit
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+Migration notes:
+
+* Inventory features in `legacy/streamlit/` and decide which are high value to move into `cauweb`.
+* Create REST endpoints for functions that were tightly coupled to Streamlit server-side Python handlers.
+* Add React counterparts using `LiveChart`, tables and parameter UIs.
+
+---
+
+## Developer workflow & conventions
+
+* **Branches**: `main` for release-ready code; feature branches `feat/...`, hotfixes `fix/...`.
+* **Commits**: use Conventional Commits (type(scope): subject), refer: `.github/Contributor_Guide/commiting.md`
+* **PRs**: include a description, screenshots, or link tests/lint status. Use the PR template in `.github/PULL_REQUEST_TEMPLATE.md`
+* **Type-safety**: keep TS `strict` mode passing; add runtime validation at API boundaries using `zod` or `io-ts`.
+
+<!-- ### Local debugging tips
+
+* Use the mock WS server for UI debugging: `node src/quant_research_starter/frontend/cauweb/scripts/mock-ws-server.js`.
+* For backend debugging, run `uvicorn api.main:app --reload` and then call the endpoints from Postman or `curl`. -->
 
 ---
 
 ## Contributing
 
-Contributions are very welcome. Please follow these steps:
+1. Fork the repo and create a feature branch.
+2. Run tests & linters locally.
+3. Open a PR against `main` with a clear description, testing notes, and screenshots.
+<!-- 4. If this change introduces schema changes, update `specs/realtime.schema.json` and document migration steps. -->
 
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new behavior
-4. Open a pull request with a clear description and rationale
-
-Please review `CONTRIBUTING.md` and the `CODE_OF_CONDUCT.md` before submitting.
+See `.github/Contributor_Guide/CONTRIBUTING.md` for code-style, review, and release guidance.
 
 ---
 
-## AI policy — short & practical
+## Roadmap / recommended next contributions:
 
-**Yes — you are allowed to use AI tools** (ChatGPT, Copilot, Codeium, etc.) to help develop, prototype, or document code in this repository.
+Suggested high-value items (already tracked in issues):
 
-A few friendly guidelines:
+* Implement typed WS client in `src/quant_research_starter/frontend/cauweb` (reconnect, subscriptions).
+* Migrate high-value Streamlit pages to `cauweb` React components.
+* Add Playwright e2e tests for realtime flows with a mocked WS server.
+* Implement a paper-trade sandbox UI and backend adapter.
 
-* **Be transparent** when a contribution is substantially generated by an AI assistant — add a short note in the PR or commit message (e.g., "Generated with ChatGPT; reviewed and adapted by <your-name>").
-* **Review and test** all AI-generated code. Treat it as a helpful draft, not final production-quality code.
-* **Follow licensing** and attribution rules for any external snippets the AI suggests. Don’t paste large verbatim copyrighted material.
-* **Security & correctness**: double-check numerical logic, data handling, and anything that affects trading decisions.
-
-This policy is intentionally permissive: we want the community to move fast while keeping quality and safety in mind.
-
+See the Issues board for prioritized tasks and labels like `urgent`, `Type:___`, `Semver:___`.
+<!-- 
 ---
 
-## License
+## Troubleshooting
 
-This project is licensed under the MIT License — see the `LICENSE` file for details.
+* **`npm run build` fails with TS errors**: run `npm run typecheck` to isolate type issues; ensure correct `NODE_VERSION` and run `npm ci` to use lockfile.
+* **CORS / proxy errors**: ensure the frontend dev proxy is configured and backend running on expected host/port; check `.env.local`.
+* **WS not connecting**: verify WS URL, check auth token in handshake, and inspect server logs for subscribe rejections.
+
+If you hit an environment-specific issue, add a detailed issue with logs and reproduction steps.
+
+--- -->
+
+## License & contact
+
+This project is licensed under the license in `LICENSE` (check root). For questions, open an issue or contact the maintainers listed in `AUTHORS` / `MAINTAINERS` files.
 
 ---
-
-## Acknowledgements
-
-Built with inspiration from open-source quant libraries and the research community. If you use this project in papers or public work, a short citation or mention is appreciated.
