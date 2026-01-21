@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        button { padding: 10px; margin: 5px; cursor: pointer; }
+        .success { color: green; }
+        .error { color: red; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        #output { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Authentication Test</h1>
+    
+    <div>
+        <input id="email" type="email" placeholder="Email" value="test@test.com" />
+        <input id="password" type="password" placeholder="Password" value="test123" />
+    </div>
+    
+    <div>
+        <button onclick="testRegister()">Test Register</button>
+        <button onclick="testLogin()">Test Login</button>
+        <button onclick="testMe()">Test /me</button>
+        <button onclick="clearOutput()">Clear</button>
+    </div>
+    
+    <div id="output"></div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        
+        function log(message, isError = false) {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = isError ? 'error' : 'success';
+            div.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            output.appendChild(div);
+        }
+        
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+        
+        async function testRegister() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            log('🔄 Registering: ' + email);
+            
+            try {
+                const response = await fetch(API_URL + '/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: email, password: password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Register SUCCESS: ' + JSON.stringify(data));
+                } else {
+                    log('❌ Register FAILED: ' + JSON.stringify(data), true);
+                }
+            } catch (error) {
+                log('❌ Register ERROR: ' + error.message, true);
+            }
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            log('🔄 Logging in: ' + email);
+            
+            try {
+                const formData = new URLSearchParams();
+                formData.append('username', email);
+                formData.append('password', password);
+                
+                const response = await fetch(API_URL + '/api/auth/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Login SUCCESS: Token = ' + data.access_token.substring(0, 20) + '...');
+                    localStorage.setItem('token', data.access_token);
+                } else {
+                    log('❌ Login FAILED: ' + JSON.stringify(data), true);
+                }
+            } catch (error) {
+                log('❌ Login ERROR: ' + error.message, true);
+            }
+        }
+        
+        async function testMe() {
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                log('❌ No token found. Please login first.', true);
+                return;
+            }
+            
+            log('🔄 Testing /me endpoint');
+            
+            try {
+                const response = await fetch(API_URL + '/api/auth/me', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ /me SUCCESS: ' + JSON.stringify(data));
+                } else {
+                    log('❌ /me FAILED: ' + JSON.stringify(data), true);
+                }
+            } catch (error) {
+                log('❌ /me ERROR: ' + error.message, true);
+            }
+        }
+    </script>
+</body>
+</html>

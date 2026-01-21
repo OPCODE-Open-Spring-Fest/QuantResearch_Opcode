@@ -115,13 +115,22 @@ This README explains how to run both components in dev and production, how realt
 
 ## Prerequisites
 
-* **Node**: v18.x or later (use nvm to manage) — used by `cauweb` (frontend)
+* **Node**: v18.x or later (v23.3.0 recommended) — used by `cauweb` (frontend)
 * **Yarn** or **npm**: prefer `npm ci` for CI reproducibility
-* **Python**: 3.10 / 3.11 (or the version pinned in `pyproject.toml`)
+* **Python**: 3.10 / 3.11+ (3.11.6 recommended)
+* **Database**: PostgreSQL (Aiven Cloud or local)
+* **Redis**: Redis/Valkey for caching and task queue
 * Optional: **Docker** for containerized builds
 * Optional: **VS Code** + Remote Containers if using `.devcontainer`
 
 Ensure `NODE_ENV` and Python virtualenv are isolated per project.
+
+### 🚀 Quick Setup (New!)
+
+For a complete backend-frontend integration setup, see:
+- **[SETUP_COMPLETE.md](SETUP_COMPLETE.md)** - Complete setup guide with architecture
+- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Quick reference card
+- **[start.ps1](start.ps1)** - Windows PowerShell startup script
 
 ---
 
@@ -129,51 +138,115 @@ Ensure `NODE_ENV` and Python virtualenv are isolated per project.
 
 Follow these steps to run the backend and frontend locally. The instructions assume you're at the repo root.
 
-### 1) Set up Python env & install backend deps: to be updated
-
-<!-- ```bash
-# create venv (example)
-python -m venv .venv
-source .venv/bin/activate    # Linux / macOS
-.\.venv\Scripts\activate   # Windows CMD
-
-# install
-pip install -U pip
-pip install -e .[dev]
-# or use poetry / pipx if project uses it
-```
-
-Run any database migrations or data bootstrap steps if the repo documents them (check `src/quant_research_starter/api/README.md`). -->
-
-<!-- ### 2) Start the Python backend (dev server) : to be updated soon
-
-If the backend is FastAPI / Flask, typical commands:
+### 1) Set up Python env & install backend deps
 
 ```bash
-# FastAPI example (uvicorn)
-cd src/quant_research_starter
-uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+# create venv (recommended)
+python -m venv .venv
+# Activate on Linux/macOS:
+source .venv/bin/activate
+# Activate on Windows PowerShell:
+.\.venv\Scripts\Activate.ps1
 
-# or if a Makefile is provided
-make dev-backend
+# Install dependencies
+pip install -U pip
+pip install -e .
 ```
 
-Confirm the REST endpoints (e.g., `GET /health`) are reachable at `http://localhost:8000`. -->
+### 2) Configure environment variables
 
-### 3) Run cauweb (React + TS) in dev mode
+Create a `.env` file in the root directory:
+
+```env
+DATABASE_URL=postgresql+asyncpg://user:pass@host:port/dbname?ssl=require
+REDIS_URL=rediss://default:pass@host:port
+JWT_SECRET=your-secret-key-here
+CORS_ORIGINS=http://localhost:3003,http://localhost:3004,http://localhost:5173
+FINNHUB_API_KEY=your-api-key
+OUTPUT_DIR=output/
+```
+
+Create frontend environment file at `src/quant_research_starter/frontend/cauweb/.env`:
+
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+### 3) Start the Python backend (FastAPI)
+
+```bash
+# From repo root
+uvicorn src.quant_research_starter.api.main:app --reload --port 8000 --host 0.0.0.0
+```
+
+The backend API will be available at:
+- **API**: http://localhost:8000
+- **Docs**: http://localhost:8000/docs
+- **Health**: http://localhost:8000/api/health
+
+### 4) Run cauweb (React + TS) in dev mode
 
 Open a new terminal and run:
 
 ```bash
 cd src/quant_research_starter/frontend/cauweb
-npm i --save-dev
+npm install
 npm run dev
 ```
-<!-- 
-* The dev server typically runs at `http://localhost:3000` (or the port shown on start).
-* The frontend dev server is configured to proxy `/api` to `http://localhost:8000` — see `vite.config.js` or `webpack.dev.js` for proxy settings. -->
 
-<!-- If environment variables are required, copy `.env.example` → `.env.local` and edit values. -->
+The frontend will be available at:
+- **App**: http://localhost:3003 (or next available port)
+
+**Note**: The frontend is configured to connect to the backend at `http://localhost:8000` via the `VITE_API_URL` environment variable.
+
+### ⚡ Alternative: Quick Start Script (Windows)
+
+```powershell
+.\start.ps1
+```
+
+This script will:
+1. Check Python and Node.js installations
+2. Show commands for both servers
+3. Optionally start the backend server
+
+For complete setup instructions, see [SETUP_COMPLETE.md](SETUP_COMPLETE.md).
+
+---
+
+## 🔌 Backend-Frontend Integration
+
+The application features a complete full-stack integration:
+
+### Architecture
+```
+React Frontend (Vite + TS)  ←→  FastAPI Backend  ←→  PostgreSQL + Redis
+     Port 3003/3004                Port 8000            Aiven Cloud
+```
+
+### Key Features
+- **REST API Communication**: Frontend calls backend via `/api/*` endpoints
+- **Health Monitoring**: `/api/health` for service status
+- **Asset Management**: `/api/assets/` for market data
+- **Authentication**: JWT-based auth ready (token flow configured)
+- **WebSocket Support**: Infrastructure for real-time updates
+- **CORS Configured**: Proper cross-origin settings for development
+
+### Verified Endpoints
+- ✅ `GET /api/health` - Health check
+- ✅ `GET /api/assets/` - Asset data with prices
+- ✅ `POST /api/auth/register` - User registration
+- ✅ `POST /api/auth/token` - Authentication
+- ✅ `POST /api/backtest/` - Backtest execution
+- ✅ `GET /api/dashboard/*` - Dashboard metrics
+
+### Technology Stack
+**Backend**: FastAPI 0.128.0, SQLAlchemy 2.0.45, Uvicorn 0.40.0, Celery 5.6.2  
+**Frontend**: React 18, TypeScript 5.9, Vite 5.4, Tailwind CSS 4.1, Chart.js 4.5  
+**Database**: PostgreSQL (Asyncpg), Redis/Valkey  
+**Platform**: Python 3.11.6, Node.js 23.3.0
+
+For detailed setup and API documentation, see [SETUP_COMPLETE.md](SETUP_COMPLETE.md).
 
 <!-- ### 4) Optional: Run with mock WS server (dev/demo mode)
 
