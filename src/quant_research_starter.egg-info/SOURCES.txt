@@ -20,6 +20,10 @@ src/quant_research_starter/api/alembic/versions/0001_initial_create_users_and_jo
 src/quant_research_starter/api/routers/assets.py
 src/quant_research_starter/api/routers/auth.py
 src/quant_research_starter/api/routers/backtest.py
+src/quant_research_starter/api/routers/dashboard.py
+src/quant_research_starter/api/services/__init__.py
+src/quant_research_starter/api/services/dashboard.py
+src/quant_research_starter/api/services/finnhub.py
 src/quant_research_starter/api/tasks/celery_app.py
 src/quant_research_starter/api/tasks/sync_db.py
 src/quant_research_starter/api/tasks/tasks.py
