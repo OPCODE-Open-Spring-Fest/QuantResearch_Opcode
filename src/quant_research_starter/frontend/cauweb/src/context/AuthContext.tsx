@@ -1,63 +1,70 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase, getAccessToken, onAuthStateChange } from '../utils/supabaseClient';
-import type { Session, User } from '@supabase/supabase-js';
+
+type User = {
+  id: number;
+  username: string;
+  email: string;
+};
 
 type AuthContextValue = {
   user: User | null;
-  session: Session | null;
-  signOut: () => Promise<void>;
+  token: string | null;
+  isAuthenticated: boolean;
+  setAuthData: (token: string, user: User) => void;
+  clearAuth: () => void;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    let mounted = true;
-
-    async function init() {
-      if (!supabase) return;
-      const { data } = await supabase.auth.getSession();
-      if (!mounted) return;
-      setSession(data?.session ?? null);
-      setUser(data?.session?.user ?? null);
-    }
-
-    init();
-
-    const unsubscribe = onAuthStateChange((event, newSession) => {
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
+    // Load auth data from localStorage on mount
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    
+    if (storedToken && storedUser) {
       try {
-        if (newSession?.access_token) window.localStorage.setItem('sb:token', newSession.access_token);
-        else window.localStorage.removeItem('sb:token');
+        const parsedUser = JSON.parse(storedUser);
+        setToken(storedToken);
+        setUser(parsedUser);
       } catch (err) {
-        // ignore
+        // Clear invalid data
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
       }
-    });
-
-    return () => {
-      mounted = false;
-      unsubscribe();
-    };
+    }
   }, []);
 
-  const signOut = async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
-    }
-    setSession(null);
-    setUser(null);
-    try {
-      window.localStorage.removeItem('sb:token');
-    } catch (err) {
-      // ignore
-    }
+  const setAuthData = (newToken: string, newUser: User) => {
+    setToken(newToken);
+    setUser(newUser);
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('user', JSON.stringify(newUser));
   };
 
-  return <AuthContext.Provider value={{ user, session, signOut }}>{children}</AuthContext.Provider>;
+  const clearAuth = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  };
+
+  return (
+    <AuthContext.Provider 
+      value={{ 
+        user, 
+        token, 
+        isAuthenticated: !!token,
+        setAuthData,
+        clearAuth
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export function useAuth() {

@@ -8,8 +8,10 @@ const getAuthHeaders = () => {
   };
 };
 
+// Helper to handle API errors consistently
 const handleApiError = async (response: Response) => {
   if (response.status === 401) {
+    // Unauthorized - clear token and redirect to login
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     window.location.href = '/login';
@@ -21,6 +23,7 @@ const handleApiError = async (response: Response) => {
 };
 
 export const api = {
+  // Auth
   login: async (email: string, password: string) => {
     try {
       const formData = new URLSearchParams();
@@ -73,15 +76,20 @@ export const api = {
     const response = await fetch(`${API_URL}/api/auth/me`, {
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
+  // Dashboard
   getDashboardStats: async () => {
     const response = await fetch(`${API_URL}/api/dashboard/overview`, {
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -89,7 +97,9 @@ export const api = {
     const response = await fetch(`${API_URL}/api/dashboard/positions`, {
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -97,7 +107,9 @@ export const api = {
     const response = await fetch(`${API_URL}/api/dashboard/trades`, {
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -105,17 +117,22 @@ export const api = {
     const response = await fetch(`${API_URL}/api/stocks/quote/${symbol}`, {
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
+  // Trading
   buyStock: async (data: { symbol: string; quantity: number; price: number }) => {
     const response = await fetch(`${API_URL}/api/positions/buy`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -125,7 +142,9 @@ export const api = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -133,7 +152,9 @@ export const api = {
     const response = await fetch(`${API_URL}/api/positions`, {
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -141,15 +162,20 @@ export const api = {
     const response = await fetch(`${API_URL}/api/trades`, {
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
+  // Portfolio
   getPortfolio: async () => {
     const response = await fetch(`${API_URL}/api/portfolio/balance`, {
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -159,7 +185,9 @@ export const api = {
       headers: getAuthHeaders(),
       body: JSON.stringify({ amount }),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -169,17 +197,22 @@ export const api = {
       headers: getAuthHeaders(),
       body: JSON.stringify({ amount }),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
+  // Backtest
   runBacktest: async (config: any) => {
     const response = await fetch(`${API_URL}/api/backtest`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(config),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -187,15 +220,20 @@ export const api = {
     const response = await fetch(`${API_URL}/api/backtest/${jobId}/results`, {
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
+  // Watchlists
   getWatchlists: async () => {
     const response = await fetch(`${API_URL}/api/watchlists`, {
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -205,7 +243,9 @@ export const api = {
       headers: getAuthHeaders(),
       body: JSON.stringify({ name }),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -215,15 +255,20 @@ export const api = {
       headers: getAuthHeaders(),
       body: JSON.stringify({ symbol }),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
+  // Alerts
   getAlerts: async () => {
     const response = await fetch(`${API_URL}/api/alerts`, {
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -233,7 +278,9 @@ export const api = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -242,15 +289,20 @@ export const api = {
       method: 'DELETE',
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
+  // Strategies
   getStrategies: async () => {
     const response = await fetch(`${API_URL}/api/strategies`, {
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -260,7 +312,9 @@ export const api = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -269,7 +323,9 @@ export const api = {
       method: 'POST',
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 
@@ -278,9 +334,12 @@ export const api = {
       method: 'POST',
       headers: getAuthHeaders(),
     });
-    if (!response.ok) await handleApiError(response);
+    if (!response.ok) {
+      await handleApiError(response);
+    }
     return response.json();
   },
 };
 
+// Default export for compatibility
 export default api;

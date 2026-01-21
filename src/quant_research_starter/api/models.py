@@ -145,3 +145,52 @@ class CompanyProfile(Base):
     
     created_at = sa.Column(sa.DateTime, server_default=func.now())
     updated_at = sa.Column(sa.DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class Strategy(Base):
+    """Trading strategy configuration."""
+    __tablename__ = "strategies"
+
+    id = sa.Column(sa.Integer, primary_key=True, index=True)
+    user_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"), nullable=False, index=True)
+    name = sa.Column(sa.String(256), nullable=False)
+    description = sa.Column(sa.Text)
+    strategy_type = sa.Column(sa.String(64), nullable=False)  # momentum, mean_reversion, value, custom
+    parameters = sa.Column(sa.JSON, default={})
+    symbols = sa.Column(sa.JSON, default=[])  # List of symbols
+    is_active = sa.Column(sa.Boolean, default=True, index=True)
+    
+    created_at = sa.Column(sa.DateTime, server_default=func.now())
+    updated_at = sa.Column(sa.DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class Watchlist(Base):
+    """User watchlists for tracking stocks."""
+    __tablename__ = "watchlists"
+
+    id = sa.Column(sa.Integer, primary_key=True, index=True)
+    user_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"), nullable=False, index=True)
+    name = sa.Column(sa.String(256), nullable=False)
+    description = sa.Column(sa.Text)
+    symbols = sa.Column(sa.JSON, default=[])  # List of symbols
+    
+    created_at = sa.Column(sa.DateTime, server_default=func.now())
+    updated_at = sa.Column(sa.DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class Alert(Base):
+    """Price alerts and notifications."""
+    __tablename__ = "alerts"
+
+    id = sa.Column(sa.Integer, primary_key=True, index=True)
+    user_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"), nullable=False, index=True)
+    symbol = sa.Column(sa.String(16), nullable=False, index=True)
+    alert_type = sa.Column(sa.String(64), nullable=False)  # price_above, price_below, volume_spike, percent_change
+    threshold_value = sa.Column(sa.Float, nullable=False)
+    current_value = sa.Column(sa.Float)
+    message = sa.Column(sa.Text)
+    is_active = sa.Column(sa.Boolean, default=True, index=True)
+    triggered_at = sa.Column(sa.DateTime, nullable=True)
+    
+    created_at = sa.Column(sa.DateTime, server_default=func.now())
+    updated_at = sa.Column(sa.DateTime, server_default=func.now(), onupdate=func.now())

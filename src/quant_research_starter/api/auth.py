@@ -12,6 +12,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from . import db, models, supabase
 
@@ -61,11 +62,11 @@ async def get_current_user(
             raise credentials_exception
 
         q = await session.execute(
-            models.User.__table__.select().where(models.User.username == email)
+            select(models.User).where(models.User.username == email)
         )
-        row = q.first()
-        if row:
-            return row[0]
+        user = q.scalar_one_or_none()
+        if user:
+            return user
 
         # Create a local user mapping (no password — managed by Supabase)
         random_pw = secrets.token_urlsafe(32)
@@ -86,12 +87,11 @@ async def get_current_user(
         raise credentials_exception from None
 
     q = await session.execute(
-        models.User.__table__.select().where(models.User.username == username)
+        select(models.User).where(models.User.username == username)
     )
-    row = q.first()
-    if not row:
+    user = q.scalar_one_or_none()
+    if not user:
         raise credentials_exception
-    user = row[0]
     return user
 
 

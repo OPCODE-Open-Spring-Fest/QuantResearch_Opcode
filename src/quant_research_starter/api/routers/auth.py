@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from .. import auth, db, models, schemas, supabase
 
@@ -25,9 +26,10 @@ async def register_user(
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     q = await session.execute(
-        models.User.__table__.select().where(models.User.username == user_in.username)
+        select(models.User).where(models.User.username == user_in.username)
     )
-    if q.first():
+    existing_user = q.scalar_one_or_none()
+    if existing_user:
         raise HTTPException(status_code=400, detail="Username already registered")
     hashed = auth.get_password_hash(user_in.password)
     user = models.User(username=user_in.username, hashed_password=hashed)
@@ -57,14 +59,26 @@ async def login_for_access_token(
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     q = await session.execute(
-        models.User.__table__.select().where(models.User.username == form_data.username)
+        select(models.User).where(models.User.username == form_data.username)
     )
-    row = q.first()
-    if not row:
+    user = q.scalar_one_or_none()
+    if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
-    user = row[0]
     if not auth.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
     access_token = auth.create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.get("/me", response_model=schemas.UserRead)
+async def get_current_user_info(
+    current_user: Annotated[models.User, Depends(auth.get_current_user)],
+):
+    """Get current authenticated user information."""
+    return schemas.UserRead(
+        id=current_user.id,
+        username=current_user.username,
+        is_active=current_user.is_active,
+        role=current_user.role
+    )

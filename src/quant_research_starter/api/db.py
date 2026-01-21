@@ -11,10 +11,10 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.orm import declarative_base
 
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql+asyncpg://postgres:password@localhost:5432/qrs"
+    "DATABASE_URL", "sqlite+aiosqlite:///./quantresearch.db"
 )
 
-engine = create_async_engine(DATABASE_URL, future=True, echo=False)
+engine = create_async_engine(DATABASE_URL, future=True, echo=False, connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {})
 AsyncSessionLocal = async_sessionmaker(
     engine, expire_on_commit=False, class_=AsyncSession
 )
